@@ -10,7 +10,7 @@ const express_1 = require("express");
 const fileRoutes = express_1.Router();
 // const fileSystem = new FileSystem();
 fileRoutes.get('/', (req, res) => {
-    res.json({
+    return res.json({
         ok: true,
         mensaje: 'Heroku funciona!'
     });

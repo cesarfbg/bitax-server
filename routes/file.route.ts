@@ -10,7 +10,7 @@ const fileRoutes = Router();
 // const fileSystem = new FileSystem();
 
 fileRoutes.get('/', (req, res) => {
-    res.json({
+    return res.json({
         ok: true,
         mensaje: 'Heroku funciona!'
     });
