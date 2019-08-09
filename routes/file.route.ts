@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { FileUpload } from '../interfaces/file.interface';
 import FileSystem from '../classes/filesystem';
 import path from 'path';
@@ -6,8 +6,10 @@ import fs from 'fs';
 
 const filePath = path.resolve( __dirname, '../uploads/files/');
 const pdf = require('pdf-parse');
+const xl = require('excel4node');
 const fileRoutes = Router();
 const fileSystem = new FileSystem();
+const mime = require('mime');
 
 fileRoutes.post('/upload', async ( req: any, res: Response ) => {
     
@@ -73,17 +75,52 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             // Vamos a crear un objeto cuyos atributos sean los números relacionados a los valores
             let indiceRentaObj = 33;
             let valoresRenta = <any>{};
+
             valoresArrRenta.forEach( valor => {
                 // Guardamos el valor convertido a número en su índice correspondiente
                 valoresRenta[indiceRentaObj] = Number(valor.replace(/,/g, ''));
                 indiceRentaObj++;
             });
+            
+            let wb = new xl.Workbook();
+            
+            // Creamos una hoja en el libro de excel
+            const ws = wb.addWorksheet('Resultados');
+            
+            // Creamos un estilo reutilizable
+            // const style = wb.createStyle({
+            //     font: {
+            //         color: '#FF0800',
+            //         size: 12,
+            //     },
+            //     numberFormat: '$#,##0.00; ($#,##0.00); -'
+            // });
+            
+            // Llenamos las celdas
+            ws.cell(1, 1).string('Índice');
+            ws.cell(1, 2).string('Valor');
+            
+            let idx = 2;
+            for ( let att in valoresRenta ){
+                ws.cell(idx, 1).number(Number(att));
+                ws.cell(idx, 2).number(valoresRenta[att]);
+                idx++;
+            }
 
-            return res.json({
-                ok: true,
-                mensaje: 'Procesando archivo',
-                valoresRenta
-            });
+            // Creamos el libro de excel
+            wb.write('./dist/outputs/Renta-Estructurado.xlsx');
+            
+            const xlsFile = path.resolve(__dirname, '../outputs/Renta-Estructurado.xlsx');
+                        
+            // Configuramos headers
+            var filename = path.basename(xlsFile);
+            var mimetype = mime.lookup(xlsFile);
+    
+            // Enviamos la respuesta
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+            res.setHeader('Content-type', mimetype);
+            var filestream = fs.createReadStream(xlsFile);
+            filestream.pipe(res)
 
         });
 

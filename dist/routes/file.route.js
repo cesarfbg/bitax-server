@@ -17,8 +17,10 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const filePath = path_1.default.resolve(__dirname, '../uploads/files/');
 const pdf = require('pdf-parse');
+const xl = require('excel4node');
 const fileRoutes = express_1.Router();
 const fileSystem = new filesystem_1.default();
+const mime = require('mime');
 fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, function* () {
     if (!req.files) {
         return res.status(400).json({
@@ -73,11 +75,37 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 valoresRenta[indiceRentaObj] = Number(valor.replace(/,/g, ''));
                 indiceRentaObj++;
             });
-            return res.json({
-                ok: true,
-                mensaje: 'Procesando archivo',
-                valoresRenta
-            });
+            let wb = new xl.Workbook();
+            // Creamos una hoja en el libro de excel
+            const ws = wb.addWorksheet('Resultados');
+            // Creamos un estilo reutilizable
+            // const style = wb.createStyle({
+            //     font: {
+            //         color: '#FF0800',
+            //         size: 12,
+            //     },
+            //     numberFormat: '$#,##0.00; ($#,##0.00); -'
+            // });
+            // Llenamos las celdas
+            ws.cell(1, 1).string('Índice');
+            ws.cell(1, 2).string('Valor');
+            let idx = 2;
+            for (let att in valoresRenta) {
+                ws.cell(idx, 1).number(Number(att));
+                ws.cell(idx, 2).number(valoresRenta[att]);
+                idx++;
+            }
+            // Creamos el libro de excel
+            wb.write('./dist/outputs/Renta-Estructurado.xlsx');
+            const xlsFile = path_1.default.resolve(__dirname, '../outputs/Renta-Estructurado.xlsx');
+            // Configuramos headers
+            var filename = path_1.default.basename(xlsFile);
+            var mimetype = mime.lookup(xlsFile);
+            // Enviamos la respuesta
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+            res.setHeader('Content-type', mimetype);
+            var filestream = fs_1.default.createReadStream(xlsFile);
+            filestream.pipe(res);
         });
     }
     if (file.mimetype.includes('spreadsheet')) {
