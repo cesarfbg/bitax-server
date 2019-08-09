@@ -4,7 +4,7 @@
   "description": "Server App Bitax",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "César Blanco",
   "license": "ISC",
