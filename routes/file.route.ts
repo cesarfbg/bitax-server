@@ -31,7 +31,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
 
         await fileSystem.guardarImagenTemporal( file );
         
-        const dataBuffer = fs.readFileSync(filePath+'\\'+file.name);
+        const dataBuffer = fs.readFileSync(filePath+'/'+file.name);
 
         pdf(dataBuffer).then( (data: any) => {
 

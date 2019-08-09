@@ -35,7 +35,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
     }
     if (file.mimetype.includes('pdf')) {
         yield fileSystem.guardarImagenTemporal(file);
-        const dataBuffer = fs_1.default.readFileSync(filePath + '\\' + file.name);
+        const dataBuffer = fs_1.default.readFileSync(filePath + '/' + file.name);
         pdf(dataBuffer).then((data) => {
             let fileReaded = data.text;
             // Convertimos cada \n en ||| para que se haga más fácil la lectura y la búsqueda de índices
