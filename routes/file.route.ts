@@ -39,33 +39,31 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
         // Leemos como buffer la imagen guardada
         const dataBuffer = fs.readFileSync(uploadedFilePath+'/'+file.name);
 
-        if ( file.name.toLocaleLowerCase().includes('renta') ) {
-            // Procesamos como PDF - Renta
+        if ( file.name.toLocaleLowerCase().includes('renta') ) { // Verificamos si el archivo es de RENTA
             pdf(dataBuffer).then( (data: any) => {
-                // Enviamos el archivo y recibimos la respuesta
                 const respuesta = bpdf.leerRenta(data, file);
-                // Enviamos la respuesta
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 var filestream = fs.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res)
             });
-        } else if ( file.name.toLocaleLowerCase().includes('iva') ) {
+        } else if ( file.name.toLocaleLowerCase().includes('iva') ) { // Verificamos si el archivo es de IVA
             pdf(dataBuffer).then( (data: any) => {
-                // Enviamos el archivo y recibimos la respuesta
-                const respuesta = bpdf.leerIva(data, file);
-
+                const respuesta = bpdf.leerIva(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 var filestream = fs.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res)
             });
-        } else if ( file.name.toLocaleLowerCase().includes('ica') ) {
-            res.json({
-                ok: true,
-                mensaje: 'Se procesará el archivo de ICA'
+        } else if ( file.name.toLocaleLowerCase().includes('ica') ) { // Verificamos si el archivo es de ICA
+            pdf(dataBuffer).then( (data: any) => {
+                const respuesta = bpdf.leerIca(data);
+                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                res.setHeader('Content-type', respuesta.mimetype);
+                var filestream = fs.createReadStream(respuesta.xlsFile);
+                filestream.pipe(res)
             });
-        } else if ( file.name.toLocaleLowerCase().includes('retenciones') ) {
+        } else if ( file.name.toLocaleLowerCase().includes('retenciones') ) { // Verificamos si el archivo es de RETENCIONES
             res.json({
                 ok: true,
                 mensaje: 'Se procesará el archivo de RETENCIONES'

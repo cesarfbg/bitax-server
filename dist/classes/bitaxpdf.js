@@ -8,7 +8,7 @@ const xl = require('excel4node');
 const mime = require('mime');
 class bitaxpdf {
     constructor() { }
-    leerIva(data, file) {
+    leerIva(data) {
         let fileReaded = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
         // Capturamos el Año Gravable
@@ -207,8 +207,260 @@ class bitaxpdf {
             xlsFile
         });
     }
+    leerIca(data) {
+        let fileReaded = data.text;
+        const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Capturamos el Año Gravable
+        let posicionAno = fileReadedOriginal.indexOf('||MUNICIPIO O DISTRITO:');
+        posicionAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
+        let posicionFinalAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
+        let ano = fileReadedOriginal.substring(posicionAno + 3, posicionFinalAno);
+        ano = ano.split('/');
+        ano = ano.pop();
+        // Capturamos la razón social
+        let posicionRS = fileReadedOriginal.indexOf('|||NOMBRES Y APELLIDOS O RAZÓN SOCIAL:');
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        const posicionFinalRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        const razonSocial = fileReadedOriginal.substring(posicionRS + 3, posicionFinalRS);
+        // Capturamos los valores de las celdas
+        let posicionInicialValores = posicionRS;
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        let posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        let valoresArr = fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||40.');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||DEPARTAMENTO', posicionInicialValores);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        posicionInicialValores = fileReadedOriginal.indexOf('|||MUNICIPIO O DISTRITO DE LA DIRECCIÓN:');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        posicionInicialValores = fileReadedOriginal.indexOf('|||17. TOTAL IMPUESTOS');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        // Lenamos el campo 18 que viene vacío
+        valoresArr.push('');
+        // Seguimos con el campo 19
+        posicionInicialValores = fileReadedOriginal.indexOf('|||40.');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||DEPARTAMENTO', posicionInicialValores);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        posicionInicialValores = fileReadedOriginal.indexOf('|||MENOS VALOR DE EXENCIÓN O EXONERACIÓN SOBRE EL IMPUESTO Y NO SOBRE LOS INGRESOS');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        let posicion25 = fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        let posicion27 = fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||40.');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||DEPARTAMENTO', posicionInicialValores);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        let arrTmpPosiciones = fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||');
+        // Llenamos 23
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 24
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 25
+        valoresArr.push(posicion25);
+        // Llenamos 26
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 27
+        valoresArr.push(posicion27);
+        // Llenamos 28
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 29
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 30
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 31
+        posicionInicialValores = fileReadedOriginal.indexOf('|||NOMBRES Y APELLIDOS O RAZÓN SOCIAL:');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores));
+        // Llenamos 32
+        posicionInicialValores = fileReadedOriginal.indexOf('|||OTRA');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores));
+        // Llenamos 33
+        posicionInicialValores = fileReadedOriginal.indexOf('|||MUNICIPIO O DISTRITO DE LA DIRECCIÓN:');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores));
+        // Llenamos 34
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 35
+        posicionInicialValores = fileReadedOriginal.indexOf('|||MENOS ANTICIPO LIQUIDADO EN EL AÑO ANTERIOR');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores));
+        // Llenamos 36
+        valoresArr.push(arrTmpPosiciones.shift() || '');
+        // Llenamos 37 y 38
+        posicionInicialValores = fileReadedOriginal.indexOf('|||SANCIONES.');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        // Llenamos 39 y 40
+        posicionInicialValores = fileReadedOriginal.indexOf('|||MENOS SALDO A FAVOR DEL PERIODO ANTERIOR SIN SOLICITUD DE DEVOLUCIÓN O COMPENSACIÓN');
+        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores + 3);
+        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores + 3, posicionFinalValores).split('|||'));
+        // Creamos el Libro de Excel
+        let wb = new xl.Workbook();
+        const cellStyle = wb.createStyle({
+            'alignment': {
+                'horizontal': ['center'],
+                'vertical': ['center'],
+                'wrapText': true
+            }
+        });
+        // Creamos una hoja en el libro de excel con su respectivo formato
+        const ws = wb.addWorksheet('Resultados', {
+            'sheetFormat': {
+                'baseColWidth': 20,
+                'defaultColWidth': 20,
+                'defaultRowHeight': 36
+            }
+        });
+        const headerStlye = wb.createStyle({
+            'alignment': {
+                'horizontal': ['center'],
+                'vertical': ['center'],
+                'wrapText': true,
+            },
+            'font': {
+                'bold': true,
+                'size': 14
+            }
+        });
+        // Llenamos las cabeceras
+        ws.cell(1, 1).string('Concepto').style(headerStlye);
+        ws.cell(1, 2).string('Campo').style(headerStlye);
+        ws.cell(1, 3).string('Valor').style(headerStlye);
+        ws.cell(1, 4).string('Año').style(headerStlye);
+        ws.cell(1, 5).string('Razón Social').style(headerStlye);
+        // Llenamos las celdas con la data
+        for (let concepto in conceptosIcaArr) {
+            ws.cell(Number(concepto) + 2, 1).string(conceptosIcaArr[concepto]).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 2).number(Number(concepto) + 8).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 5).string(razonSocial).style(cellStyle);
+        }
+        // Creamos el libro de excel
+        ws.column(1).setWidth(70);
+        ws.column(5).setWidth(30);
+        wb.write('./dist/outputs/Ica-Estructurado.xlsx');
+        const xlsFile = path_1.default.resolve(__dirname, '../outputs/Iva-Estructurado.xlsx');
+        // Configuramos headers
+        var filename = path_1.default.basename(xlsFile);
+        var mimetype = mime.lookup(xlsFile);
+        return ({
+            filename,
+            mimetype,
+            xlsFile
+        });
+    }
 }
 exports.default = bitaxpdf;
+const conceptosIcaArr = [
+    'TOTAL INGRESOS ORDINARIOS Y EXTRAORDINARIOS DEL PERIODO EN TODO EL PAIS',
+    'MENOS INGRESOS FUERA DE ESTE MUNICIPIO O DISTRITO',
+    'TOTAL INGRESOS ORDINARIOS Y EXTRAORDINARIOS EN ESTE MUNICIPIO (RENGLÓN 8 MENOS 9)',
+    'MENOS INGRESOS POR DEVOLUCIONES, REBAJAS, DESCUENTOS',
+    'MENOS INGRESOS POR EXPORTACIONES',
+    'MENOS INGRESOS POR VENTA DE ACTIVOS FIJOS',
+    'MENOS INGRESOS POR ACTIVIDADES EXCLUIDAS O NO SUJETAS Y OTROS INGRESOS NO GRAVADOS',
+    'MENOS INGRESOS POR OTRAS ACTIVIDADES EXENTAS EN ESTE MUNICIPIO O DISTRITO (POR ACUERDO)',
+    'TOTAL INGRESOS GRAVABLES (RENGLÓN 10 MENOS 11,12,13,14 Y 15)',
+    'TOTAL IMPUESTOS',
+    'GENERACIÓN DE ENERGÍA CAPACIDAD INSTALADA',
+    'IMPUESTO LEY 56 DE 1981',
+    'TOTAL IMPUESTO DE INDUSTRIA Y COMERCIO (RENGLÓN 17+19)',
+    'IMPUESTO DE AVISOS Y TABLEROS (15% DEL RENGLÓN 20)',
+    'PAGO POR UNIDADES COMERCIALES ADICIONALES DEL SECTOR FINANCIERO',
+    'SOBRETASA BOMBERIL (Ley 1575 de 2012) (Si la hay, liquídela según el acuerdo municipal o distrital)',
+    'SOBRETASA DE SEGURIDAD (LEY 1421 de 2011) (Si la hay, liquídela según el acuerdo municipal o distrital)',
+    'TOTAL IMPUESTO A CARGO (RENGLONES 20+21+22+23+24)',
+    'MENOS VALOR DE EXENCIÓN O EXONERACIÓN SOBRE EL IMPUESTO Y NO SOBRE LOS INGRESOS',
+    'MENOS RETENCIONES que le practicaron a favor de este municipio o distrito en este período',
+    'MENOS AUTORRETENCIONES practicadas a favor de este municipio o distrito en este período',
+    'MENOS ANTICIPO LIQUIDADO EN EL AÑO ANTERIOR',
+    'ANTICIPO DEL AÑO SIGUIENTE (Si existe, liquide porcentaje según Acuerdo Municipal o distrital)',
+    'SANCIONES',
+    'MENOS SALDO A FAVOR DEL PERIODO ANTERIOR SIN SOLICITUD DE DEVOLUCIÓN O COMPENSACIÓN',
+    'TOTAL SALDO A CARGO (REGLON 25-26-27-28-29+30+31-32)',
+    'TOTAL SALDO A FAVOR (REGLON 25-26-27-28-29+30+31-32) si el resultado es menor a cero',
+    'VALOR A PAGAR',
+    'DESCUENTO POR PRONTO PAGO (Si existe, liquídelo según el Acuerdo Municipal o distrital)',
+    'INTERESES DE MORA',
+    'TOTAL A PAGAR (RENGLÓN 35 - 36 +37)',
+    'LIQUIDE EL VALOR DEL PAGO VOLUNTARIO (Según instrucciones del municipio/distrito)',
+    'TOTAL A PAGAR CON PAGO VOLUNTARIO (Reglón 38 + 39)'
+];
 const conceptosIvaArr = [
     'Ingresos por operaciones gravadas al 5%',
     'Ingresos por operaciones gravadas a la tarifa general',
