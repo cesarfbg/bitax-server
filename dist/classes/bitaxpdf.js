@@ -8,6 +8,92 @@ const xl = require('excel4node');
 const mime = require('mime');
 class bitaxpdf {
     constructor() { }
+    leerIva(data, file) {
+        let fileReaded = data.text;
+        const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Capturamos el Año Gravable
+        let posicionAno = fileReadedOriginal.indexOf('|||Total anticipos IVA');
+        posicionAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
+        let posicionFinalAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
+        const ano = fileReadedOriginal.substring(posicionAno + 3, posicionFinalAno);
+        // Capturamos la razón social
+        let posicionRS = posicionFinalAno; // Partimos de acá porque estan cerca ambos valores
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        const posicionFinalRS = fileReadedOriginal.indexOf('|||', posicionRS + 3);
+        const razonSocial = fileReadedOriginal.substring(posicionRS + 3, posicionFinalRS);
+        // Capturamos los valores de las celdas
+        let posicionValores = posicionRS; // Partimos de acá porque estan cerca ambos valores
+        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores + 3);
+        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores + 3);
+        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores + 3);
+        // Capturamos la posicion final de los valores
+        let idx = 0;
+        let posicionFinalValores = posicionValores;
+        while (idx <= 74) {
+            posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores + 3);
+            idx++;
+        }
+        let valoresArr = fileReadedOriginal.substring(posicionValores + 3, posicionFinalValores - 4);
+        valoresArr = valoresArr.split('|||');
+        // Creamos el Libro de Excel
+        let wb = new xl.Workbook();
+        const cellStyle = wb.createStyle({
+            'alignment': {
+                'horizontal': ['center'],
+                'vertical': ['center'],
+                'wrapText': true
+            }
+        });
+        // Creamos una hoja en el libro de excel con su respectivo formato
+        const ws = wb.addWorksheet('Resultados', {
+            'sheetFormat': {
+                'baseColWidth': 20,
+                'defaultColWidth': 20,
+                'defaultRowHeight': 36
+            }
+        });
+        const headerStlye = wb.createStyle({
+            'alignment': {
+                'horizontal': ['center'],
+                'vertical': ['center'],
+                'wrapText': true,
+            },
+            'font': {
+                'bold': true,
+                'size': 14
+            }
+        });
+        // Llenamos las cabeceras
+        ws.cell(1, 1).string('Concepto').style(headerStlye);
+        ws.cell(1, 2).string('Campo').style(headerStlye);
+        ws.cell(1, 3).string('Valor').style(headerStlye);
+        ws.cell(1, 4).string('Año').style(headerStlye);
+        ws.cell(1, 5).string('Razón Social').style(headerStlye);
+        // Llenamos las celdas con la data
+        for (let concepto in conceptosIvaArr) {
+            ws.cell(Number(concepto) + 2, 1).string(conceptosIvaArr[concepto]).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 2).number(Number(concepto) + 27).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(Number(concepto) + 2, 5).string(razonSocial).style(cellStyle);
+        }
+        // Creamos el libro de excel
+        ws.column(1).setWidth(70);
+        ws.column(5).setWidth(30);
+        wb.write('./dist/outputs/Iva-Estructurado.xlsx');
+        const xlsFile = path_1.default.resolve(__dirname, '../outputs/Iva-Estructurado.xlsx');
+        // Configuramos headers
+        var filename = path_1.default.basename(xlsFile);
+        var mimetype = mime.lookup(xlsFile);
+        return ({
+            filename,
+            mimetype,
+            xlsFile
+        });
+    }
     leerRenta(data, file) {
         let fileReaded = data.text;
         // Convertimos cada \n en ||| para que se haga más fácil la lectura y la búsqueda de índices
@@ -95,8 +181,8 @@ class bitaxpdf {
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
         let idx = 2;
-        for (let concepto in conceptosArr) {
-            ws.cell(idx, 1).string(conceptosArr[concepto]).style(cellStyle);
+        for (let concepto in conceptosRentaArr) {
+            ws.cell(idx, 1).string(conceptosRentaArr[concepto]).style(cellStyle);
             ws.cell(idx, 5).string(razonSocial).style(cellStyle);
             ws.cell(idx, 4).number(Number(ano)).style(cellStyle);
             idx++;
@@ -123,7 +209,83 @@ class bitaxpdf {
     }
 }
 exports.default = bitaxpdf;
-const conceptosArr = [
+const conceptosIvaArr = [
+    'Ingresos por operaciones gravadas al 5%',
+    'Ingresos por operaciones gravadas a la tarifa general',
+    'Ingresos A.I.U por operaciones gravadas (base gravable especial)',
+    'Ingresos por exportación de bienes',
+    'Ingresos por exportación de servicios',
+    'Ingresos por ventas a sociedades de comercialización internacional',
+    'Ingresos por ventas a zonas francas',
+    'Ingresos por juegos de suerte y azar',
+    'Ingresos por operaciones exentas (Arts. 477, 478 y 481 del ET)',
+    'Ingresos por venta de cerveza de producción nacional o importada',
+    'Ingresos por venta de gaseosas y similares',
+    'Ingresos por venta de licores, aperitivos, vinos y similares',
+    'Ingresos por operaciones excluidas',
+    'Ingresos por operaciones no gravadas',
+    'Total ingresos brutos',
+    'Devoluciones en ventas anuladas, rescindidas o resueltas',
+    'Total ingresos netos recibidos durante el período',
+    'Compras importación de bienes gravados a la tarifa del 5%',
+    'Compras importación de bienes gravados a la tarifa general',
+    'Compras importación de bienes y servicios gravados provenientes de Zonas Francas',
+    'Compras importación de bienes no gravados',
+    'Compras importación de bienes excluidos, exentos y no gravados provenientes de Zonas Francas',
+    'Compras importación de servicios',
+    'Compras nacionales de bienes gravados a la tarifa del 5%',
+    'Compras nacionales de bienes gravados a la tarifa general',
+    'Compras nacionales de servicios gravados a la tarifa del 5%',
+    'Compras nacionales de servicios gravados a la tarifa general',
+    'Compras nacionales de bienes y servicios excluidos, exentos y no gravados',
+    'Total compras e importaciones brutas',
+    'Devoluciones en compras anuladas, rescindidas o resueltas en este período',
+    'Total compras netas realizadas durante el período',
+    'A la tarifa del 5%',
+    'A la tarifa general',
+    'Sobre A.I.U en operaciones gravadas (base gravable especial)',
+    'En juegos de suerte y azar',
+    'En venta cerveza de producción nacional o importada',
+    'En venta de gaseosas y similares',
+    'En venta de licores, aperitivos, vinos y similares 5%',
+    'En retiro de inventario para activos fijos, consumo, muestras gratis o donaciones',
+    'IVA recuperado en devoluciones en compras anuladas, rescindidas o resueltas',
+    'Total impuesto generado por operaciones gravadas',
+    'Por importaciones gravadas a tarifa del 5%',
+    'Por importaciones gravadas la tarifa general',
+    'De bienes y servicios gravados provenientes de Zonas Francas',
+    'Por compras de bienes gravados a la tarifa 5%',
+    'Por compras de bienes gravados a tarifa general',
+    'Por licores, aperitivos, vinos y similares',
+    'Por servicios gravados a la tarifa del 5%',
+    'Por servicios gravados a la tarifa general',
+    'Descuento IVA exploración hidrocarburos Art. 485-2 ET',
+    'Total Impuesto pagado o facturado',
+    'IVA retenido por servicios prestados en Colombia por no domiciliados o no residentes',
+    'IVA resultante por devoluciones en ventas anuladas, rescindidas o resueltas',
+    'Ajuste impuestos descontables (perdidas, hurto o castigo de inventarios)',
+    'Total impuestos descontables',
+    'Saldo a pagar por el período fiscal',
+    'Saldo a favor del período fiscal',
+    'Saldo a favor del período fiscal anterior',
+    'Retenciones por IVA que le practicaron',
+    'Saldo a pagar por impuesto',
+    'Sanciones',
+    'Total saldo a pagar',
+    'o Total saldo a favor',
+    'Saldo a favor susceptible de devolución y/o compensación por el presente período',
+    'Saldo a favor susceptible de ser devuelto y/o compensado a imputar en el período siguiente',
+    'Saldo a favor sin derecho a dev. y/o compensación susceptible de ser imputado en el período siguiente',
+    'Total saldo a favor a imputar al periodo siguiente',
+    'Bimestre 1',
+    'Bimestre 2',
+    'Bimestre 3',
+    'Bimestre 4',
+    'Bimestre 5',
+    'Bimestre 6',
+    'Total anticipos IVA Régimen SIMPLE'
+];
+const conceptosRentaArr = [
     'Efectivo y equivalentes al efectivo',
     'Inversiones e instrumentos financieros derivados',
     'Cuentas, documentos y arrendamientos financieros por cobrar',

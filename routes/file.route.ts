@@ -51,9 +51,14 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 filestream.pipe(res)
             });
         } else if ( file.name.toLocaleLowerCase().includes('iva') ) {
-            res.json({
-                ok: true,
-                mensaje: 'Se procesará el archivo de IVA'
+            pdf(dataBuffer).then( (data: any) => {
+                // Enviamos el archivo y recibimos la respuesta
+                const respuesta = bpdf.leerIva(data, file);
+
+                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                res.setHeader('Content-type', respuesta.mimetype);
+                var filestream = fs.createReadStream(respuesta.xlsFile);
+                filestream.pipe(res)
             });
         } else if ( file.name.toLocaleLowerCase().includes('ica') ) {
             res.json({
