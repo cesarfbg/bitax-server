@@ -62,6 +62,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
             });
         }
         else if (file.name.toLocaleLowerCase().includes('ica')) { // Verificamos si el archivo es de ICA
+            console.log('Archivo de ICA');
             pdf(dataBuffer).then((data) => {
                 const respuesta = bpdf.leerIca(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);

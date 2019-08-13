@@ -483,7 +483,7 @@ export default class bitaxpdf {
         ws.column(5).setWidth(30);
         wb.write('./dist/outputs/Ica-Estructurado.xlsx');
 
-        const xlsFile = path.resolve(__dirname, '../outputs/Iva-Estructurado.xlsx');
+        const xlsFile = path.resolve(__dirname, '../outputs/Ica-Estructurado.xlsx');
 
         // Configuramos headers
         var filename = path.basename(xlsFile);
