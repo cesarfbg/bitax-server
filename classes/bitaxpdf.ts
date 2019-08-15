@@ -94,7 +94,7 @@ export default class bitaxpdf {
         ws.column(5).setWidth(30);
         wb.write('./dist/outputs/Retenciones-Estructurado.xlsx');
 
-        const xlsFile = path.resolve(__dirname, '../outputs/Iva-Estructurado.xlsx');
+        const xlsFile = path.resolve(__dirname, '../outputs/Retenciones-Estructurado.xlsx');
 
         // Configuramos headers
         var filename = path.basename(xlsFile);
