@@ -42,42 +42,42 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
         // Guardamos la imagen recibida
         yield fileSystem.guardarImagenTemporal(file);
         // Leemos como buffer la imagen guardada
-        const dataBuffer = fs_1.default.readFileSync(uploadedFilePath + '/' + file.name);
+        const dataBuffer = yield fs_1.default.readFileSync(uploadedFilePath + '/' + file.name);
         if (file.name.toLocaleLowerCase().includes('renta')) { // Verificamos si el archivo es de RENTA
-            pdf(dataBuffer).then((data) => {
-                const respuesta = bpdf.leerRenta(data, file);
+            pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
+                const respuesta = yield bpdf.leerRenta(data, file);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
-            });
+            }));
         }
         else if (file.name.toLocaleLowerCase().includes('iva')) { // Verificamos si el archivo es de IVA
-            pdf(dataBuffer).then((data) => {
-                const respuesta = bpdf.leerIva(data);
+            pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
+                const respuesta = yield bpdf.leerIva(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
-            });
+            }));
         }
         else if (file.name.toLocaleLowerCase().includes('ica')) { // Verificamos si el archivo es de ICA
-            pdf(dataBuffer).then((data) => {
-                const respuesta = bpdf.leerIca(data);
+            pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
+                const respuesta = yield bpdf.leerIca(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
-            });
+            }));
         }
         else if (file.name.toLocaleLowerCase().includes('retenciones')) { // Verificamos si el archivo es de RETENCIONES
-            pdf(dataBuffer).then((data) => {
-                const respuesta = bpdf.leerRetenciones(data);
+            pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
+                const respuesta = yield bpdf.leerRetenciones(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
-            });
+            }));
         }
         else {
             res.json({
