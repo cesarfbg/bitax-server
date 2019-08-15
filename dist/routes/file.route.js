@@ -48,7 +48,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 const respuesta = bpdf.leerRenta(data, file);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                var filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
         }
@@ -57,24 +57,26 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 const respuesta = bpdf.leerIva(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                var filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
         }
         else if (file.name.toLocaleLowerCase().includes('ica')) { // Verificamos si el archivo es de ICA
-            console.log('Archivo de ICA');
             pdf(dataBuffer).then((data) => {
                 const respuesta = bpdf.leerIca(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                var filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
         }
         else if (file.name.toLocaleLowerCase().includes('retenciones')) { // Verificamos si el archivo es de RETENCIONES
-            res.json({
-                ok: true,
-                mensaje: 'Se procesará el archivo de RETENCIONES'
+            pdf(dataBuffer).then((data) => {
+                const respuesta = bpdf.leerRetenciones(data);
+                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                res.setHeader('Content-type', respuesta.mimetype);
+                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
+                filestream.pipe(res);
             });
         }
         else {
