@@ -64,10 +64,13 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
         else if (file.name.toLocaleLowerCase().includes('ica')) { // Verificamos si el archivo es de ICA
             pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
                 const respuesta = yield bpdf.leerIca(data);
-                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
-                res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
-                filestream.pipe(res);
+                // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                // res.setHeader('Content-type', respuesta.mimetype);
+                // const filestream = await fs.createReadStream(respuesta.xlsFile);
+                // filestream.pipe(res);
+                res.json({
+                    respuesta
+                });
             }));
         }
         else if (file.name.toLocaleLowerCase().includes('retenciones')) { // Verificamos si el archivo es de RETENCIONES

@@ -11,6 +11,24 @@ class bitaxpdf {
     leerRetenciones(data) {
         let fileReaded = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Capturamos el Período
+        let posicionPeriodo = fileReadedOriginal.indexOf('|||88.');
+        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        let posicionFinalPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        const periodo = fileReadedOriginal.substring(posicionPeriodo + 3, posicionFinalPeriodo).replace(' ', '');
+        // Capturamos la Tarifa
+        let posicionTarifa = fileReadedOriginal.indexOf('|||88.');
+        posicionTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa + 3);
+        posicionTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa + 3);
+        let idex = 0;
+        while (idex <= 69) {
+            posicionTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa + 3);
+            idex++;
+        }
+        let posicionFinalTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa + 3);
+        let tarifa = fileReadedOriginal.substring(posicionTarifa + 3, posicionFinalTarifa).replace(' ', '');
+        tarifa = tarifa.substring(4, tarifa.length);
         // Capturamos el Año Gravable
         let posicionAno = fileReadedOriginal.indexOf('|||88.');
         posicionAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
@@ -73,14 +91,25 @@ class bitaxpdf {
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
+        // Llenamos manualmente las primeras filas
+        ws.cell(2, 1).string('Período').style(cellStyle);
+        ws.cell(2, 2).number(Number(3)).style(cellStyle);
+        ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+        ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(2, 5).string(razonSocial).style(cellStyle);
         // Llenamos las celdas con la data
         for (let concepto in conceptosRetencionesArr) {
-            ws.cell(Number(concepto) + 2, 1).string(conceptosRetencionesArr[concepto]).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 2).number(Number(concepto) + 27).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 5).string(razonSocial).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 1).string(conceptosRetencionesArr[concepto]).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 2).number(Number(concepto) + 27).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 5).string(razonSocial).style(cellStyle);
         }
+        ws.cell(64, 1).string('Tarifa').style(cellStyle);
+        ws.cell(64, 2).number(Number(91)).style(cellStyle);
+        ws.cell(64, 3).string(tarifa).style(cellStyle);
+        ws.cell(64, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(64, 5).string(razonSocial).style(cellStyle);
         // Creamos el libro de excel
         ws.column(1).setWidth(70);
         ws.column(5).setWidth(30);
@@ -98,6 +127,13 @@ class bitaxpdf {
     leerIva(data) {
         let fileReaded = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Capturamos el Período
+        let posicionPeriodo = fileReadedOriginal.indexOf('|||25.');
+        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        let posicionFinalPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
+        const periodo = fileReadedOriginal.substring(posicionPeriodo + 3, posicionFinalPeriodo).replace(' ', '');
         // Capturamos el Año Gravable
         let posicionAno = fileReadedOriginal.indexOf('|||Total anticipos IVA');
         posicionAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
@@ -159,13 +195,19 @@ class bitaxpdf {
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
+        // Llenamos manualmente las primeras filas
+        ws.cell(2, 1).string('Período').style(cellStyle);
+        ws.cell(2, 2).number(Number(3)).style(cellStyle);
+        ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+        ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(2, 5).string(razonSocial).style(cellStyle);
         // Llenamos las celdas con la data
         for (let concepto in conceptosIvaArr) {
-            ws.cell(Number(concepto) + 2, 1).string(conceptosIvaArr[concepto]).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 2).number(Number(concepto) + 27).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(Number(concepto) + 2, 5).string(razonSocial).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 1).string(conceptosIvaArr[concepto]).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 2).number(Number(concepto) + 27).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(Number(concepto) + 3, 5).string(razonSocial).style(cellStyle);
         }
         // Creamos el libro de excel
         ws.column(1).setWidth(70);
@@ -183,8 +225,56 @@ class bitaxpdf {
     }
     leerRenta(data, file) {
         let fileReaded = data.text;
-        // Convertimos cada \n en ||| para que se haga más fácil la lectura y la búsqueda de índices
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Buscamos valores iniciales juntos
+        let posicionInitValues = fileReadedOriginal.indexOf('|||104.');
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        let posicionFinalInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues + 3);
+        let valoresIniciales = fileReadedOriginal.substring(posicionInitValues + 3, posicionFinalInitValues);
+        let arrInitValues = [];
+        let posicionFinalNumero = 0;
+        let counter = 0;
+        for (let i = 0; i < valoresIniciales.length; i++) {
+            if (!isNaN(Number(valoresIniciales[i]))) {
+                counter++;
+                console.log('Numero');
+            }
+            else {
+                counter = 0;
+                console.log('Coma');
+            }
+            if (counter >= 4) {
+                posicionFinalNumero = i;
+                break;
+            }
+        }
+        arrInitValues.push(valoresIniciales.substring(0, posicionFinalNumero));
+        valoresIniciales = valoresIniciales.substring(posicionFinalNumero, valoresIniciales.length);
+        posicionFinalNumero = 0;
+        counter = 0;
+        for (let i = 0; i < valoresIniciales.length; i++) {
+            if (!isNaN(Number(valoresIniciales[i]))) {
+                counter++;
+            }
+            else {
+                counter = 0;
+            }
+            if (counter >= 4) {
+                posicionFinalNumero = i;
+                break;
+            }
+        }
+        arrInitValues.push(valoresIniciales.substring(0, posicionFinalNumero));
+        arrInitValues.push(valoresIniciales.substring(posicionFinalNumero, valoresIniciales.length));
         // Buscamos la razón social
         let posicionRS = fileReadedOriginal.indexOf('|||104.');
         let stringRS = fileReadedOriginal.substring(posicionRS, fileReadedOriginal.length);
@@ -267,14 +357,30 @@ class bitaxpdf {
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
-        let idx = 2;
+        // Llenamos manualmente las primeras filas
+        ws.cell(2, 1).string('Total costos y gastos de nómina').style(cellStyle);
+        ws.cell(2, 2).number(Number(30)).style(cellStyle);
+        ws.cell(2, 3).number(Number(arrInitValues[0].replace(/,/g, ''))).style(cellStyle);
+        ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(2, 5).string(razonSocial).style(cellStyle);
+        ws.cell(3, 1).string('Aportes al sistema de seguridad social').style(cellStyle);
+        ws.cell(3, 2).number(Number(31)).style(cellStyle);
+        ws.cell(3, 3).number(Number(arrInitValues[1].replace(/,/g, ''))).style(cellStyle);
+        ws.cell(3, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(3, 5).string(razonSocial).style(cellStyle);
+        ws.cell(4, 1).string('Aportes al SENA, ICBF, cajas de compensación').style(cellStyle);
+        ws.cell(4, 2).number(Number(32)).style(cellStyle);
+        ws.cell(4, 3).number(Number(arrInitValues[2].replace(/,/g, ''))).style(cellStyle);
+        ws.cell(4, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(4, 5).string(razonSocial).style(cellStyle);
+        let idx = 5;
         for (let concepto in conceptosRentaArr) {
             ws.cell(idx, 1).string(conceptosRentaArr[concepto]).style(cellStyle);
             ws.cell(idx, 5).string(razonSocial).style(cellStyle);
             ws.cell(idx, 4).number(Number(ano)).style(cellStyle);
             idx++;
         }
-        idx = 2;
+        idx = 5;
         for (let att in valoresRenta) {
             ws.cell(idx, 2).number(Number(att)).style(cellStyle);
             ws.cell(idx, 3).number(valoresRenta[att]).style(cellStyle);
@@ -297,6 +403,19 @@ class bitaxpdf {
     leerIca(data) {
         let fileReaded = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Verificamos si es ANUAL
+        let posicionAnual = 0;
+        let idex = 0;
+        while (idex <= 94) {
+            posicionAnual = fileReadedOriginal.indexOf('|||', posicionAnual + 3);
+            idex++;
+        }
+        let posicionFinalAnual = fileReadedOriginal.indexOf('|||', posicionAnual + 3);
+        let anualCheck = fileReadedOriginal.substring(posicionAnual + 3, posicionFinalAnual);
+        let bimestreOAnual = 'No se pudo capturar el período';
+        if (anualCheck == 'X') {
+            bimestreOAnual = 'Anual';
+        }
         // Capturamos el Año Gravable
         let posicionAno = fileReadedOriginal.indexOf('||MUNICIPIO O DISTRITO:');
         posicionAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
@@ -489,6 +608,12 @@ class bitaxpdf {
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
+        // Llenamos manualmente las primeras filas
+        ws.cell(35, 1).string('Bimestre o Período Anual').style(cellStyle);
+        ws.cell(35, 2).string('N/A').style(cellStyle);
+        ws.cell(35, 3).string(bimestreOAnual).style(cellStyle);
+        ws.cell(35, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(35, 5).string(razonSocial).style(cellStyle);
         // Llenamos las celdas con la data
         for (let concepto in conceptosIcaArr) {
             ws.cell(Number(concepto) + 2, 1).string(conceptosIcaArr[concepto]).style(cellStyle);
