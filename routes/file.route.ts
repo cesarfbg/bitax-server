@@ -58,13 +58,10 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
         } else if ( file.name.toLocaleLowerCase().includes('ica') ) { // Verificamos si el archivo es de ICA
             pdf(dataBuffer).then( async (data: any) => {
                 const respuesta = await bpdf.leerIca(data);
-                // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
-                // res.setHeader('Content-type', respuesta.mimetype);
-                // const filestream = await fs.createReadStream(respuesta.xlsFile);
-                // filestream.pipe(res);
-                res.json({
-                    respuesta
-                });
+                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                res.setHeader('Content-type', respuesta.mimetype);
+                const filestream = await fs.createReadStream(respuesta.xlsFile);
+                filestream.pipe(res);
             });
         } else if ( file.name.toLocaleLowerCase().includes('retenciones') ) { // Verificamos si el archivo es de RETENCIONES
             pdf(dataBuffer).then( async (data: any) => {
