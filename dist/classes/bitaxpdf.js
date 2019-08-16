@@ -264,11 +264,9 @@ class bitaxpdf {
         for (let i = 0; i < valoresIniciales.length; i++) {
             if (!isNaN(Number(valoresIniciales[i]))) {
                 counter++;
-                console.log('Numero');
             }
             else {
                 counter = 0;
-                console.log('Coma');
             }
             if (counter >= 4) {
                 posicionFinalNumero = i;
