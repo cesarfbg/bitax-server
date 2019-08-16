@@ -134,6 +134,19 @@ class bitaxpdf {
         posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
         let posicionFinalPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo + 3);
         const periodo = fileReadedOriginal.substring(posicionPeriodo + 3, posicionFinalPeriodo).replace(' ', '');
+        // Capturamos Periodicidad
+        let posicionPeriodicidad = fileReadedOriginal.indexOf('|||25.');
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        let posicionFinalPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad + 3);
+        const periodicidad = fileReadedOriginal.substring(posicionPeriodicidad + 3, posicionFinalPeriodicidad).replace(' ', '');
         // Capturamos el Año Gravable
         let posicionAno = fileReadedOriginal.indexOf('|||Total anticipos IVA');
         posicionAno = fileReadedOriginal.indexOf('|||', posicionAno + 3);
@@ -201,13 +214,18 @@ class bitaxpdf {
         ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
         ws.cell(2, 4).number(Number(ano)).style(cellStyle);
         ws.cell(2, 5).string(razonSocial).style(cellStyle);
+        ws.cell(3, 1).string('Periodicidad de la declaración').style(cellStyle);
+        ws.cell(3, 2).number(Number(24)).style(cellStyle);
+        ws.cell(3, 3).string(periodicidad).style(cellStyle);
+        ws.cell(3, 4).number(Number(ano)).style(cellStyle);
+        ws.cell(3, 5).string(razonSocial).style(cellStyle);
         // Llenamos las celdas con la data
         for (let concepto in conceptosIvaArr) {
-            ws.cell(Number(concepto) + 3, 1).string(conceptosIvaArr[concepto]).style(cellStyle);
-            ws.cell(Number(concepto) + 3, 2).number(Number(concepto) + 27).style(cellStyle);
-            ws.cell(Number(concepto) + 3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-            ws.cell(Number(concepto) + 3, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(Number(concepto) + 3, 5).string(razonSocial).style(cellStyle);
+            ws.cell(Number(concepto) + 4, 1).string(conceptosIvaArr[concepto]).style(cellStyle);
+            ws.cell(Number(concepto) + 4, 2).number(Number(concepto) + 27).style(cellStyle);
+            ws.cell(Number(concepto) + 4, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+            ws.cell(Number(concepto) + 4, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(Number(concepto) + 4, 5).string(razonSocial).style(cellStyle);
         }
         // Creamos el libro de excel
         ws.column(1).setWidth(70);
