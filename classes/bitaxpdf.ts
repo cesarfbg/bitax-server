@@ -1,68 +1,13 @@
 import path from 'path';
-
 const xl = require('excel4node');
 const mime = require('mime');
 
 export default class bitaxpdf {
 
-    constructor() {}
-
-    leerRetenciones( data: any ) {
-
+    leerRetenciones( data: any, anoTitulo: number ) {
+        
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
-
-        // Capturamos el Período
-        let posicionPeriodo = fileReadedOriginal.indexOf('|||88.');
-        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        let posicionFinalPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        const periodo = fileReadedOriginal.substring(posicionPeriodo+3, posicionFinalPeriodo).replace(' ', '');
-
-        // Capturamos la Tarifa
-        let posicionTarifa = fileReadedOriginal.indexOf('|||88.');
-        posicionTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa+3);
-        posicionTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa+3);
-        let idex = 0;
-        while ( idex <= 69 ) {
-            posicionTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa+3);
-            idex++;
-        }
-        let posicionFinalTarifa = fileReadedOriginal.indexOf('|||', posicionTarifa+3);
-        let tarifa = fileReadedOriginal.substring(posicionTarifa+3, posicionFinalTarifa).replace(' ', '');
-        tarifa = tarifa.substring(4, tarifa.length);
-
-        // Capturamos el Año Gravable
-        let posicionAno = fileReadedOriginal.indexOf('|||88.');
-        posicionAno = fileReadedOriginal.indexOf('|||', posicionAno+3);
-        let posicionFinalAno = fileReadedOriginal.indexOf('|||', posicionAno+3);
-        const ano = fileReadedOriginal.substring(posicionAno+3, posicionFinalAno);
-
-        // Capturamos la razón social
-        let posicionRS = posicionFinalAno; // Partimos de acá porque estan cerca ambos valores
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        const posicionFinalRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        const razonSocial = fileReadedOriginal.substring(posicionRS+3, posicionFinalRS);
-
-        // Capturamos los valores de las celdas
-        let posicionValores = posicionRS; // Partimos de acá porque estan cerca ambos valores
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-
-        // Capturamos la posicion final de los valores
-        let idx = 0;
-        let posicionFinalValores = posicionValores;
-        while ( idx <= 60 ) {
-            posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-            idx++;
-        }
-        let valoresArr: any = fileReadedOriginal.substring(posicionValores+3, posicionFinalValores);
-        valoresArr = valoresArr.split('|||');
 
         // Creamos el Libro de Excel
         let wb = new xl.Workbook();
@@ -92,6 +37,8 @@ export default class bitaxpdf {
                 'size': 14
             }
         });
+        ws.column(1).setWidth(70);
+        ws.column(5).setWidth(30);
         
         // Llenamos las cabeceras
         ws.cell(1, 1).string('Concepto').style(headerStlye);
@@ -100,39 +47,132 @@ export default class bitaxpdf {
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
 
-        // Llenamos manualmente las primeras filas
-        ws.cell(2, 1).string('Período').style(cellStyle);
-        ws.cell(2, 2).number(Number(3)).style(cellStyle);
-        ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
-        ws.cell(2, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(2, 5).string(razonSocial).style(cellStyle);
+        if ( anoTitulo === 2019 ) {
 
-        // Llenamos las celdas con la data
-        for ( let concepto in conceptosRetencionesArr ) {
-            ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr[concepto]).style(cellStyle);
-            ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
-            ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-            ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 137, 1);
+    
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 138, 1);
+    
+            // Capturamos la Tarifa
+            const tarifa = this.obtenerFila(fileReadedOriginal, 208, 1).substring(4).replace(' ', '');
+    
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 142, 1);
+    
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 146, 61).split('|||');
+    
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+    
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosRetencionesArr2019 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2019[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+    
+            ws.cell(64, 1).string('Tarifa').style(cellStyle);
+            ws.cell(64, 2).number(Number(91)).style(cellStyle);
+            ws.cell(64, 3).string(tarifa).style(cellStyle);
+            ws.cell(64, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(64, 5).string(razonSocial).style(cellStyle);
+
+        } else if ( anoTitulo === 2018 ) {
+            
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 136, 1);
+    
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 137, 1).replace(' ', '');
+
+            // Capturamos la Tarifa
+            const tarifa = this.obtenerFila(fileReadedOriginal, 204, 1).substring(4).replace(' ', '');
+
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 141, 1);
+    
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 145, 58).split('|||');
+    
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+    
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosRetencionesArr2018 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2018[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+    
+            ws.cell(61, 1).string('Tarifa').style(cellStyle);
+            ws.cell(61, 2).number(Number(91)).style(cellStyle);
+            ws.cell(61, 3).string(tarifa).style(cellStyle);
+            ws.cell(61, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(61, 5).string(razonSocial).style(cellStyle);
+
+        } else if ( anoTitulo === 2017 ) {
+
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 136, 1);
+    
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 137, 1).replace(' ', '');
+
+            // Capturamos la Tarifa
+            const tarifa = this.obtenerFila(fileReadedOriginal, 204, 1).substring(4).replace(' ', '');
+
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 141, 1);
+    
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 145, 58).split('|||');
+    
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+    
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosRetencionesArr2017 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2017[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+    
+            ws.cell(61, 1).string('Tarifa').style(cellStyle);
+            ws.cell(61, 2).number(Number(91)).style(cellStyle);
+            ws.cell(61, 3).string(tarifa).style(cellStyle);
+            ws.cell(61, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(61, 5).string(razonSocial).style(cellStyle);
+
+        } else {
+            ws.cell(2, 1).string('Los archivos del año '+anoTitulo+' no se pueden procesar, contacte al desarrollador').style(headerStlye);
         }
-
-        ws.cell(64, 1).string('Tarifa').style(cellStyle);
-        ws.cell(64, 2).number(Number(91)).style(cellStyle);
-        ws.cell(64, 3).string(tarifa).style(cellStyle);
-        ws.cell(64, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(64, 5).string(razonSocial).style(cellStyle);
-
+        
         // Creamos el libro de excel
-        ws.column(1).setWidth(70);
-        ws.column(5).setWidth(30);
         wb.write('./dist/outputs/Retenciones-Estructurado.xlsx');
-
         const xlsFile = path.resolve(__dirname, '../outputs/Retenciones-Estructurado.xlsx');
-
-        // Configuramos headers
         var filename = path.basename(xlsFile);
         var mimetype = mime.lookup(xlsFile);
-
         return ({
             filename,
             mimetype,
@@ -144,6 +184,7 @@ export default class bitaxpdf {
 
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        return fileReadedOriginal;
         
         // Capturamos el Período
         let posicionPeriodo = fileReadedOriginal.indexOf('|||25.');
@@ -755,9 +796,21 @@ export default class bitaxpdf {
         });
 
     }
+
+    private obtenerFila( archivo: string,  fila: number, cantidadDeLineas: number ) {
+        let posicionInicial = archivo.indexOf('|||');
+        for (let i = 1; i < fila; i++) {
+            posicionInicial = archivo.indexOf('|||', posicionInicial+3);
+        }
+        let posicionFinal = posicionInicial;
+        for (let i = 1; i <= cantidadDeLineas; i++) {
+            posicionFinal = archivo.indexOf('|||', posicionFinal+3);
+        }
+        return archivo.substring(posicionInicial+3, posicionFinal);
+    }
 }
 
-const conceptosRetencionesArr = [
+const conceptosRetencionesArr2019 = [
     'Rentas de trabajo (Base sujeta a retención para pagos o abonos en cuenta)',
     'Rentas de pensiones (Base sujeta a retención para pagos o abonos en cuenta)',
     'Honorarios (Base sujeta a retención para pagos o abonos en cuenta)',
@@ -816,6 +869,128 @@ const conceptosRetencionesArr = [
     'Total retenciones IVA',
     'Retenciones impuesto timbre nacional',
     'Retenciones impuesto nacional al consumo',
+    'Total retenciones',
+    'Sanciones',
+    'Total retenciones más sanciones'
+];
+
+const conceptosRetencionesArr2018 = [
+    'Rentas de trabajo (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Rentas de pensiones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Honorarios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Comisiones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Servicios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Rendimientos financieros (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Arrendamientos (Muebles e inmuebles) (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Regalías y explotación de la propiedad intelectual (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Dividendos y participaciones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Compras (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Transacciones con tarjetas débito y crédito (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Contratos de construcción (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Enajenación de activos fijos de personas naturales ante notarios y autoridades de tránsito (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Loterías, rifas, apuestas y similares (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Otros pagos sujetos a retención (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Contribuyentes exonerados de aportes (art. 114-1 E.T.) (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Ventas (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Honorarios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Comisiones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Servicios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Rendimientos financieros (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Otros conceptos (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Pagos o abonos en cuenta al exterior a países sin convenio 50 (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Pagos o abonos en cuenta al exterior a países con convenio vigente (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Rentas de trabajo(Retenciones a título de renta)',
+    'Rentas de pensiones(Retenciones a título de renta)',
+    'Honorarios(Retenciones a título de renta)',
+    'Comisiones(Retenciones a título de renta)',
+    'Servicios(Retenciones a título de renta)',
+    'Rendimientos financieros (Retenciones a título de renta)',
+    'Arrendamientos (Muebles e inmuebles)(Retenciones a título de renta)',
+    'Regalías y explotación de la propiedad intelectual(Retenciones a título de renta)',
+    'Dividendos y participaciones(Retenciones a título de renta)',
+    'Compras(Retenciones a título de renta)',
+    'Transacciones con tarjetas débito y crédito(Retenciones a título de renta)',
+    'Contratos de construcción(Retenciones a título de renta)',
+    'Enajenación de activos fijos de personas naturales ante notarios y autoridades de tránsito(Retenciones a título de renta)',
+    'Loterías, rifas, apuestas y similares(Retenciones a título de renta)',
+    'Otros pagos sujetos a retención(Retenciones a título de renta)',
+    'Autorretenciones - Contribuyentes exonerados de aportes (art. 114-1 E.T.)(Retenciones a título de renta)',
+    'Autorretenciones - Ventas(Retenciones a título de renta)',
+    'Autorretenciones - Honorarios(Retenciones a título de renta)',
+    'Autorretenciones - Comisiones(Retenciones a título de renta)',
+    'Autorretenciones - Servicios(Retenciones a título de renta)',
+    'Autorretenciones - Rendimientos financieros(Retenciones a título de renta)',
+    'Autorretenciones - Otros conceptos(Retenciones a título de renta)',
+    'Pagos o abonos en cuenta al exterior a países sin convenio 50(Retenciones a título de renta)',
+    'Pagos o abonos en cuenta al exterior a países con convenio vigente(Retenciones a título de renta)',
+    'Menos retenciones practicadas en exceso o indebidas o por operaciones anuladas, rescindidas o resueltas (Retenciones a título de renta)',
+    'Total retenciones renta y complementario (Retenciones a título de renta)',
+    'A responsables del impuesto sobre las ventas',
+    'Practicadas por servicios a no residentes o no domiciliados',
+    'Menos retenciones practicadas en exceso o indebidas o por operaciones anuladas, rescindidas o resueltas',
+    'Total retenciones IVA',
+    'Retenciones impuesto timbre nacional',
+    'Total retenciones',
+    'Sanciones',
+    'Total retenciones más sanciones'
+];
+
+const conceptosRetencionesArr2017 = [
+    'Rentas de trabajo (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Rentas de pensiones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Honorarios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Comisiones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Servicios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Rendimientos financieros (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Arrendamientos (Muebles e inmuebles) (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Regalías y explotación de la propiedad intelectual (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Dividendos y participaciones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Compras (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Transacciones con tarjetas débito y crédito (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Contratos de construcción (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Enajenación de activos fijos de personas naturales ante notarios y autoridades de tránsito (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Loterías, rifas, apuestas y similares (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Otros pagos sujetos a retención (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Decreto 2201 de 2016  (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Ventas (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Honorarios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Comisiones (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Servicios (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Rendimientos financieros (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Autorretenciones - Otros conceptos (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Pagos o abonos en cuenta al exterior a países sin convenio 50 (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Pagos o abonos en cuenta al exterior a países con convenio vigente (Base sujeta a retención para pagos o abonos en cuenta)',
+    'Rentas de trabajo(Retenciones a título de renta)',
+    'Rentas de pensiones(Retenciones a título de renta)',
+    'Honorarios(Retenciones a título de renta)',
+    'Comisiones(Retenciones a título de renta)',
+    'Servicios(Retenciones a título de renta)',
+    'Rendimientos financieros (Retenciones a título de renta)',
+    'Arrendamientos (Muebles e inmuebles)(Retenciones a título de renta)',
+    'Regalías y explotación de la propiedad intelectual(Retenciones a título de renta)',
+    'Dividendos y participaciones(Retenciones a título de renta)',
+    'Compras(Retenciones a título de renta)',
+    'Transacciones con tarjetas débito y crédito(Retenciones a título de renta)',
+    'Contratos de construcción(Retenciones a título de renta)',
+    'Enajenación de activos fijos de personas naturales ante notarios y autoridades de tránsito(Retenciones a título de renta)',
+    'Loterías, rifas, apuestas y similares(Retenciones a título de renta)',
+    'Otros pagos sujetos a retención(Retenciones a título de renta)',
+    'Autorretenciones - Decreto 2201 de 2016 (Retenciones a título de renta)',
+    'Autorretenciones - Ventas(Retenciones a título de renta)',
+    'Autorretenciones - Honorarios(Retenciones a título de renta)',
+    'Autorretenciones - Comisiones(Retenciones a título de renta)',
+    'Autorretenciones - Servicios(Retenciones a título de renta)',
+    'Autorretenciones - Rendimientos financieros(Retenciones a título de renta)',
+    'Autorretenciones - Otros conceptos(Retenciones a título de renta)',
+    'Pagos o abonos en cuenta al exterior a países sin convenio 50(Retenciones a título de renta)',
+    'Pagos o abonos en cuenta al exterior a países con convenio vigente(Retenciones a título de renta)',
+    'Menos retenciones practicadas en exceso o indebidas o por operaciones anuladas, rescindidas o resueltas (Retenciones a título de renta)',
+    'Total retenciones renta y complementario (Retenciones a título de renta)',
+    'A responsables del impuesto sobre las ventas',
+    'Practicadas por servicios a no residentes o no domiciliados',
+    'Menos retenciones practicadas en exceso o indebidas o por operaciones anuladas, rescindidas o resueltas',
+    'Total retenciones IVA',
+    'Retenciones impuesto timbre nacional',
     'Total retenciones',
     'Sanciones',
     'Total retenciones más sanciones'

@@ -34,13 +34,25 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
     if ( file.mimetype.includes('pdf') ) {
 
         // Guardamos la imagen recibida
-        await fileSystem.guardarImagenTemporal( file );
+        await fileSystem.guardarArchivoTemporal( file );
 
         // Leemos como buffer la imagen guardada
         const dataBuffer = await fs.readFileSync(uploadedFilePath+'/'+file.name);
 
         if ( file.name.toLocaleLowerCase().includes('renta') ) { // Verificamos si el archivo es de RENTA
             pdf(dataBuffer).then( async (data: any) => {
+                let ano: any = file.name.split(' ');
+                for (let str of ano) {
+                    if (str.length === 4) {
+                        if ( Number.isInteger( Number(str) ) ) {
+                            ano = Number(str);
+                            break;
+                        }
+                    }
+                }
+                if ( !ano ) {
+                    ano = '(No se pudo capturar el año)';
+                }
                 const respuesta = await bpdf.leerRenta(data, file);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
@@ -49,14 +61,43 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             });
         } else if ( file.name.toLocaleLowerCase().includes('iva') ) { // Verificamos si el archivo es de IVA
             pdf(dataBuffer).then( async (data: any) => {
+                let ano: any = file.name.split(' ');
+                for (let str of ano) {
+                    if (str.length === 4) {
+                        if ( Number.isInteger( Number(str) ) ) {
+                            ano = Number(str);
+                            break;
+                        }
+                    }
+                }
+                if ( !ano ) {
+                    ano = '(No se pudo capturar el año)';
+                }
                 const respuesta = await bpdf.leerIva(data);
-                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
-                res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = await fs.createReadStream(respuesta.xlsFile);
-                filestream.pipe(res);
+                data.
+                res.json({
+                    ok: true,
+                    respuesta
+                });
+                // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                // res.setHeader('Content-type', respuesta.mimetype);
+                // const filestream = await fs.createReadStream(respuesta.xlsFile);
+                // filestream.pipe(res);
             });
         } else if ( file.name.toLocaleLowerCase().includes('ica') ) { // Verificamos si el archivo es de ICA
             pdf(dataBuffer).then( async (data: any) => {
+                let ano: any = file.name.split(' ');
+                for (let str of ano) {
+                    if (str.length === 4) {
+                        if ( Number.isInteger( Number(str) ) ) {
+                            ano = Number(str);
+                            break;
+                        }
+                    }
+                }
+                if ( !ano ) {
+                    ano = '(No se pudo capturar el año)';
+                }
                 const respuesta = await bpdf.leerIca(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
@@ -65,7 +106,18 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             });
         } else if ( file.name.toLocaleLowerCase().includes('retenciones') ) { // Verificamos si el archivo es de RETENCIONES
             pdf(dataBuffer).then( async (data: any) => {
-                const respuesta = await bpdf.leerRetenciones(data);
+                let ano: any = file.name.split(' ');
+                for (let str of ano) {
+                    if (str.length === 4) {
+                        if ( Number.isInteger( Number(str) ) ) {
+                            ano = Number(str);
+                        }
+                    }
+                }
+                if ( !ano ) {
+                    ano = '(No se pudo capturar el año)';
+                }
+                const respuesta = await bpdf.leerRetenciones(data, ano);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 const filestream = await fs.createReadStream(respuesta.xlsFile);
@@ -79,17 +131,8 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
         }
     }
 
-    // Verificamos si lo que recibimos es un EXCEL para ser procesado como tal
-    if ( file.mimetype.includes('spreadsheet') ) {
-        return res.json({
-            ok: true,
-            mensaje: 'Archivo XLS recibido.',
-            file: file.mimetype
-        });
-    }
-
     // Si lo que recibimos no es ni un PDF ni un EXCEL se envia alerta
-    if ( !file.mimetype.includes('spreadsheet') && !file.mimetype.includes('pdf')) {
+    if ( !file.mimetype.includes('pdf')) {
         return res.status(400).json({
             ok: true,
             mensaje: 'Archivo recibido no se puede procesar, formato inválido',

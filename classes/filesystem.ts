@@ -4,14 +4,13 @@ import fs from 'fs';
 
 export default class FileSystem {
 
-    constructor() {}
+    async guardarArchivoTemporal( file: FileUpload ){
 
-    guardarImagenTemporal( file: FileUpload ){
         // Verificar creación de carpetas
-        const filePath = path.resolve( __dirname, '../uploads/files/');
+        const filePath = await path.resolve( __dirname, '../uploads/files/');
         const existe = fs.existsSync(filePath);
         if ( !existe ) {
-            fs.mkdirSync( filePath );
+            await fs.mkdirSync( filePath );
         }
         return new Promise( (resolve, reject) => {
             // Mover a carpeta Uploads
