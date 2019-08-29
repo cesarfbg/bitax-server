@@ -60,6 +60,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 const respuesta = yield bpdf.leerRenta(data, file);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
+                yield bpdf.delay(2000);
                 const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             }));
@@ -86,6 +87,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 });
                 // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 // res.setHeader('Content-type', respuesta.mimetype);
+                yield bpdf.delay(2000);
                 // const filestream = await fs.createReadStream(respuesta.xlsFile);
                 // filestream.pipe(res);
             }));
@@ -107,6 +109,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 const respuesta = yield bpdf.leerIca(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
+                yield bpdf.delay(2000);
                 const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             }));
@@ -124,10 +127,11 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 if (!ano) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = yield bpdf.leerRetenciones(data, ano);
+                const respuesta = yield bpdf.leerRetenciones(data, ano, file.name);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
+                yield bpdf.delay(1000);
+                const filestream = fs_1.default.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             }));
         }

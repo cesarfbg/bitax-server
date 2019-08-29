@@ -56,6 +56,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 const respuesta = await bpdf.leerRenta(data, file);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
+                await bpdf.delay(2000);
                 const filestream = await fs.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
@@ -81,6 +82,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 });
                 // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 // res.setHeader('Content-type', respuesta.mimetype);
+                await bpdf.delay(2000);
                 // const filestream = await fs.createReadStream(respuesta.xlsFile);
                 // filestream.pipe(res);
             });
@@ -101,6 +103,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 const respuesta = await bpdf.leerIca(data);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
+                await bpdf.delay(2000);
                 const filestream = await fs.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
@@ -117,10 +120,11 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 if ( !ano ) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = await bpdf.leerRetenciones(data, ano);
+                const respuesta = await bpdf.leerRetenciones(data, ano, file.name);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
-                const filestream = await fs.createReadStream(respuesta.xlsFile);
+                await bpdf.delay(1000);
+                const filestream = fs.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
         } else {

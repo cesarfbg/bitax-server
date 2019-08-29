@@ -4,7 +4,7 @@ const mime = require('mime');
 
 export default class bitaxpdf {
 
-    leerRetenciones( data: any, anoTitulo: number ) {
+    leerRetenciones( data: any, anoTitulo: number, fileName: string ) {
         
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
@@ -169,10 +169,14 @@ export default class bitaxpdf {
         }
         
         // Creamos el libro de excel
-        wb.write('./dist/outputs/Retenciones-Estructurado.xlsx');
-        const xlsFile = path.resolve(__dirname, '../outputs/Retenciones-Estructurado.xlsx');
-        var filename = path.basename(xlsFile);
-        var mimetype = mime.lookup(xlsFile);
+        let name: any = fileName.split('.');
+        name.pop();
+        name = name.join('');
+        const time = new Date().getTime();
+        wb.write(path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx'));
+        const xlsFile = path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx');
+        const filename = path.basename(xlsFile);
+        const mimetype = mime.lookup(xlsFile);
         return ({
             filename,
             mimetype,
@@ -807,6 +811,10 @@ export default class bitaxpdf {
             posicionFinal = archivo.indexOf('|||', posicionFinal+3);
         }
         return archivo.substring(posicionInicial+3, posicionFinal);
+    }
+
+    public delay( ms: number ) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
     }
 }
 

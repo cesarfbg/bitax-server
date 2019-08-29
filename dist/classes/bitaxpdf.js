@@ -7,7 +7,7 @@ const path_1 = __importDefault(require("path"));
 const xl = require('excel4node');
 const mime = require('mime');
 class bitaxpdf {
-    leerRetenciones(data, anoTitulo) {
+    leerRetenciones(data, anoTitulo, fileName) {
         let fileReaded = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
         // Creamos el Libro de Excel
@@ -143,10 +143,14 @@ class bitaxpdf {
             ws.cell(2, 1).string('Los archivos del año ' + anoTitulo + ' no se pueden procesar, contacte al desarrollador').style(headerStlye);
         }
         // Creamos el libro de excel
-        wb.write('./dist/outputs/Retenciones-Estructurado.xlsx');
-        const xlsFile = path_1.default.resolve(__dirname, '../outputs/Retenciones-Estructurado.xlsx');
-        var filename = path_1.default.basename(xlsFile);
-        var mimetype = mime.lookup(xlsFile);
+        let name = fileName.split('.');
+        name.pop();
+        name = name.join('');
+        const time = new Date().getTime();
+        wb.write(path_1.default.resolve(__dirname, '../../dist/outputs/' + name + '-' + time + '.xlsx'));
+        const xlsFile = path_1.default.resolve(__dirname, '../../dist/outputs/' + name + '-' + time + '.xlsx');
+        const filename = path_1.default.basename(xlsFile);
+        const mimetype = mime.lookup(xlsFile);
         return ({
             filename,
             mimetype,
@@ -692,6 +696,9 @@ class bitaxpdf {
             posicionFinal = archivo.indexOf('|||', posicionFinal + 3);
         }
         return archivo.substring(posicionInicial + 3, posicionFinal);
+    }
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
 exports.default = bitaxpdf;
