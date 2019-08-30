@@ -80,7 +80,6 @@ class bitaxpdf {
             valoresArr.push(...valoresRestantes);
             // Llenamos las celdas con la data
             for (let concepto in conceptosRentaArr2017) {
-                console.log((Number(concepto) + 30) + '. ' + conceptosRentaArr2017[concepto] + ': ' + valoresArr[concepto]);
                 ws.cell(Number(concepto) + 2, 1).string(conceptosRentaArr2017[concepto]).style(cellStyle);
                 ws.cell(Number(concepto) + 2, 2).number(Number(concepto) + 30).style(cellStyle);
                 ws.cell(Number(concepto) + 2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
