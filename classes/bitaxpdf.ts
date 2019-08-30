@@ -4,11 +4,9 @@ const mime = require('mime');
 
 export default class bitaxpdf {
 
-    leerRetenciones( data: any, anoTitulo: number, fileName: string ) {
-        
+    leerRenta( data: any, anoTitulo: number, fileName: string ) {
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
-
         // Creamos el Libro de Excel
         let wb = new xl.Workbook();
         const cellStyle = wb.createStyle({
@@ -39,135 +37,54 @@ export default class bitaxpdf {
         });
         ws.column(1).setWidth(70);
         ws.column(5).setWidth(30);
-        
         // Llenamos las cabeceras
         ws.cell(1, 1).string('Concepto').style(headerStlye);
         ws.cell(1, 2).string('Campo').style(headerStlye);
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
-
         if ( anoTitulo === 2019 ) {
-
-            // Capturamos el Año Gravable
-            const ano = this.obtenerFila(fileReadedOriginal, 137, 1);
-    
-            // Capturamos el Período
-            const periodo = this.obtenerFila(fileReadedOriginal, 138, 1);
-    
-            // Capturamos la Tarifa
-            const tarifa = this.obtenerFila(fileReadedOriginal, 208, 1).substring(4).replace(' ', '');
-    
-            // Capturamos la razón social
-            const razonSocial = this.obtenerFila(fileReadedOriginal, 142, 1);
-    
-            // Capturamos los valores
-            const valoresArr = this.obtenerFila(fileReadedOriginal, 146, 61).split('|||');
-    
-            // Llenamos manualmente las primeras filas
-            ws.cell(2, 1).string('Período').style(cellStyle);
-            ws.cell(2, 2).number(Number(3)).style(cellStyle);
-            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
-            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(2, 5).string(razonSocial).style(cellStyle);
-    
-            // Llenamos las celdas con la data
-            for ( let concepto in conceptosRetencionesArr2019 ) {
-                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2019[concepto]).style(cellStyle);
-                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
-                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
-                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
-            }
-    
-            ws.cell(64, 1).string('Tarifa').style(cellStyle);
-            ws.cell(64, 2).number(Number(91)).style(cellStyle);
-            ws.cell(64, 3).string(tarifa).style(cellStyle);
-            ws.cell(64, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(64, 5).string(razonSocial).style(cellStyle);
-
+            ws.cell(2, 1).string('Los archivos pdf de RENTA del año '+anoTitulo+' no se pueden procesar, contacte al desarrollador').style(headerStlye);
         } else if ( anoTitulo === 2018 ) {
-            
             // Capturamos el Año Gravable
-            const ano = this.obtenerFila(fileReadedOriginal, 136, 1);
-    
-            // Capturamos el Período
-            const periodo = this.obtenerFila(fileReadedOriginal, 137, 1).replace(' ', '');
-
-            // Capturamos la Tarifa
-            const tarifa = this.obtenerFila(fileReadedOriginal, 204, 1).substring(4).replace(' ', '');
-
-            // Capturamos la razón social
-            const razonSocial = this.obtenerFila(fileReadedOriginal, 141, 1);
-    
-            // Capturamos los valores
-            const valoresArr = this.obtenerFila(fileReadedOriginal, 145, 58).split('|||');
-    
-            // Llenamos manualmente las primeras filas
-            ws.cell(2, 1).string('Período').style(cellStyle);
-            ws.cell(2, 2).number(Number(3)).style(cellStyle);
-            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
-            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(2, 5).string(razonSocial).style(cellStyle);
-    
+            const ano = anoTitulo;
+            // Capturamos la Razón Social
+            const razonSocial = this.obtenerFila( fileReadedOriginal, 183, 1);
+            // Capturamos los Valores
+            let valoresIniciales = this.separarPegados(this.obtenerFila(fileReadedOriginal, 189, 1));
+            const valoresArr = valoresIniciales;
+            const valoresRestantes = this.obtenerFila(fileReadedOriginal, 190, 71).split('|||');
+            valoresArr.push(...valoresRestantes);
             // Llenamos las celdas con la data
-            for ( let concepto in conceptosRetencionesArr2018 ) {
-                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2018[concepto]).style(cellStyle);
-                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
-                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
-                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            for ( let concepto in conceptosRentaArr2018 ) {
+                ws.cell(Number(concepto)+2, 1).string(conceptosRentaArr2018[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+2, 2).number(Number(concepto)+30).style(cellStyle);
+                ws.cell(Number(concepto)+2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+2, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+2, 5).string(razonSocial).style(cellStyle);
             }
-    
-            ws.cell(61, 1).string('Tarifa').style(cellStyle);
-            ws.cell(61, 2).number(Number(91)).style(cellStyle);
-            ws.cell(61, 3).string(tarifa).style(cellStyle);
-            ws.cell(61, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(61, 5).string(razonSocial).style(cellStyle);
-
         } else if ( anoTitulo === 2017 ) {
-
             // Capturamos el Año Gravable
-            const ano = this.obtenerFila(fileReadedOriginal, 136, 1);
-    
-            // Capturamos el Período
-            const periodo = this.obtenerFila(fileReadedOriginal, 137, 1).replace(' ', '');
-
-            // Capturamos la Tarifa
-            const tarifa = this.obtenerFila(fileReadedOriginal, 204, 1).substring(4).replace(' ', '');
-
-            // Capturamos la razón social
-            const razonSocial = this.obtenerFila(fileReadedOriginal, 141, 1);
-    
-            // Capturamos los valores
-            const valoresArr = this.obtenerFila(fileReadedOriginal, 145, 58).split('|||');
-    
-            // Llenamos manualmente las primeras filas
-            ws.cell(2, 1).string('Período').style(cellStyle);
-            ws.cell(2, 2).number(Number(3)).style(cellStyle);
-            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
-            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(2, 5).string(razonSocial).style(cellStyle);
-    
+            const ano = anoTitulo;
+            // Capturamos la Razón Social
+            const razonSocial = this.obtenerFila( fileReadedOriginal, 188, 1);
+            // Capturamos los Valores
+            let valoresIniciales = this.separarPegados(this.obtenerFila(fileReadedOriginal, 194, 1));
+            const valoresArr = valoresIniciales;
+            const valoresRestantes = this.obtenerFila(fileReadedOriginal, 195, 71).split('|||');
+            valoresArr.push(...valoresRestantes);
             // Llenamos las celdas con la data
-            for ( let concepto in conceptosRetencionesArr2017 ) {
-                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2017[concepto]).style(cellStyle);
-                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
-                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
-                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            for ( let concepto in conceptosRentaArr2017 ) {
+                console.log((Number(concepto)+30)+'. '+conceptosRentaArr2017[concepto]+': '+valoresArr[concepto]);
+                ws.cell(Number(concepto)+2, 1).string(conceptosRentaArr2017[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+2, 2).number(Number(concepto)+30).style(cellStyle);
+                ws.cell(Number(concepto)+2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+2, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+2, 5).string(razonSocial).style(cellStyle);
             }
-    
-            ws.cell(61, 1).string('Tarifa').style(cellStyle);
-            ws.cell(61, 2).number(Number(91)).style(cellStyle);
-            ws.cell(61, 3).string(tarifa).style(cellStyle);
-            ws.cell(61, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(61, 5).string(razonSocial).style(cellStyle);
-
         } else {
             ws.cell(2, 1).string('Los archivos del año '+anoTitulo+' no se pueden procesar, contacte al desarrollador').style(headerStlye);
         }
-        
         // Creamos el libro de excel
         let name: any = fileName.split('.');
         name.pop();
@@ -184,7 +101,156 @@ export default class bitaxpdf {
         });
     }
 
-    leerIva( data: any ) {
+    leerRetenciones( data: any, anoTitulo: number, fileName: string ) {
+        let fileReaded: string = data.text;
+        const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
+        // Creamos el Libro de Excel
+        let wb = new xl.Workbook();
+        const cellStyle = wb.createStyle({
+            'alignment': {
+                'horizontal': ['center'],
+                'vertical': ['center'],
+                'wrapText': true
+            }
+        });
+        // Creamos una hoja en el libro de excel con su respectivo formato
+        const ws = wb.addWorksheet('Resultados', {
+            'sheetFormat': {
+                'baseColWidth': 20,
+                'defaultColWidth': 20,
+                'defaultRowHeight': 50
+            }
+        });
+        const headerStlye = wb.createStyle({
+            'alignment': {
+                'horizontal': ['center'],
+                'vertical': ['center'],
+                'wrapText': true,
+            },
+            'font': {
+                'bold': true,
+                'size': 14
+            }
+        });
+        ws.column(1).setWidth(70);
+        ws.column(5).setWidth(30);
+        // Llenamos las cabeceras
+        ws.cell(1, 1).string('Concepto').style(headerStlye);
+        ws.cell(1, 2).string('Campo').style(headerStlye);
+        ws.cell(1, 3).string('Valor').style(headerStlye);
+        ws.cell(1, 4).string('Año').style(headerStlye);
+        ws.cell(1, 5).string('Razón Social').style(headerStlye);
+        if ( anoTitulo === 2019 ) {
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 137, 1);
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 138, 1);
+            // Capturamos la Tarifa
+            const tarifa = this.obtenerFila(fileReadedOriginal, 208, 1).substring(4).replace(' ', '');
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 142, 1);
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 146, 61).split('|||');
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosRetencionesArr2019 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2019[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+            ws.cell(64, 1).string('Tarifa').style(cellStyle);
+            ws.cell(64, 2).number(Number(91)).style(cellStyle);
+            ws.cell(64, 3).string(tarifa).style(cellStyle);
+            ws.cell(64, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(64, 5).string(razonSocial).style(cellStyle);
+
+        } else if ( anoTitulo === 2018 ) {
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 136, 1);
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 137, 1).replace(' ', '');
+            // Capturamos la Tarifa
+            const tarifa = this.obtenerFila(fileReadedOriginal, 204, 1).substring(4).replace(' ', '');
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 141, 1);
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 145, 58).split('|||');
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosRetencionesArr2018 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2018[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+            ws.cell(61, 1).string('Tarifa').style(cellStyle);
+            ws.cell(61, 2).number(Number(91)).style(cellStyle);
+            ws.cell(61, 3).string(tarifa).style(cellStyle);
+            ws.cell(61, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(61, 5).string(razonSocial).style(cellStyle);
+        } else if ( anoTitulo === 2017 ) {
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 136, 1);
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 137, 1).replace(' ', '');
+            // Capturamos la Tarifa
+            const tarifa = this.obtenerFila(fileReadedOriginal, 204, 1).substring(4).replace(' ', '');
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 141, 1);
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 145, 58).split('|||');
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosRetencionesArr2017 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosRetencionesArr2017[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+            ws.cell(61, 1).string('Tarifa').style(cellStyle);
+            ws.cell(61, 2).number(Number(91)).style(cellStyle);
+            ws.cell(61, 3).string(tarifa).style(cellStyle);
+            ws.cell(61, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(61, 5).string(razonSocial).style(cellStyle);
+        } else {
+            ws.cell(2, 1).string('Los archivos del año '+anoTitulo+' no se pueden procesar, contacte al desarrollador').style(headerStlye);
+        }
+        // Creamos el libro de excel
+        let name: any = fileName.split('.');
+        name.pop();
+        name = name.join('');
+        const time = new Date().getTime();
+        wb.write(path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx'));
+        const xlsFile = path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx');
+        const filename = path.basename(xlsFile);
+        const mimetype = mime.lookup(xlsFile);
+        return ({
+            filename,
+            mimetype,
+            xlsFile
+        });
+    }
+
+    leerIva( data: any, anoTitulo: number, fileName: string ) {
 
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
@@ -319,211 +385,7 @@ export default class bitaxpdf {
         });
     }
 
-    leerRenta( data: any, file: any ) {
-
-        let fileReaded: string = data.text;
-        const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
-
-        // Buscamos valores iniciales juntos
-        let posicionInitValues = fileReadedOriginal.indexOf('|||104.');
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        posicionInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        let posicionFinalInitValues = fileReadedOriginal.indexOf('|||', posicionInitValues+3);
-        let valoresIniciales = fileReadedOriginal.substring(posicionInitValues+3, posicionFinalInitValues);
-
-        let arrInitValues = [];
-        let posicionFinalNumero = 0;
-        let counter = 0;
-        for (let i = 0; i < valoresIniciales.length; i++) {
-            if ( !isNaN(Number(valoresIniciales[i])) ) {
-                counter ++;
-            } else {
-                counter = 0;
-            }
-            if ( counter >= 4 ) {
-                posicionFinalNumero = i;
-                break;
-            }
-        }
-
-        arrInitValues.push(valoresIniciales.substring(0, posicionFinalNumero));
-        valoresIniciales = valoresIniciales.substring(posicionFinalNumero, valoresIniciales.length);
-
-        posicionFinalNumero = 0;
-        counter = 0;
-        for (let i = 0; i < valoresIniciales.length; i++) {
-            if ( !isNaN(Number(valoresIniciales[i])) ) {
-                counter ++;
-            } else {
-                counter = 0;
-            }
-            if ( counter >= 4 ) {
-                posicionFinalNumero = i;
-                break;
-            }
-        }
-
-        arrInitValues.push(valoresIniciales.substring(0, posicionFinalNumero));
-        arrInitValues.push(valoresIniciales.substring(posicionFinalNumero, valoresIniciales.length));
-
-        // Buscamos la razón social
-        let posicionRS = fileReadedOriginal.indexOf('|||104.');
-        let stringRS= fileReadedOriginal.substring(posicionRS, fileReadedOriginal.length);
-        let tms = 0;
-        while( tms <= 3 ) {
-            tms++;
-            posicionRS = stringRS.indexOf('|||');
-            stringRS = stringRS.substring(posicionRS+3, stringRS.length);
-        }
-        const finalPosicionRS = stringRS.substring(3, stringRS.length).indexOf('|||');
-        const razonSocial = stringRS.substring(3, finalPosicionRS+3);
-        
-        // Capturamos el Año del archivo de RENTA
-        let ano = file.name;
-        const regex = /(\d+)/g;
-        let arrAno = ano.match(regex) || ['No se pudo capturar el Año'];
-        ano = arrAno[0];
-        let i = 0;
-
-        // Buscamos esta fila para trabajar a partir de ella, ya que esta cerca del 
-        // valor que deseamos encontrar y es poco probable que cambie a futuro.
-        let posicion = fileReadedOriginal.indexOf('|||104.');
-        let fileTmp = fileReadedOriginal.substring(posicion, fileReadedOriginal.length);
-
-        // Repetimos la búsqueda de ||| tantas veces como sea necesario para llegar a la posición 
-        // del valor 33 del archivo de RENTA, y a partir de allí obtener los demás
-        while( i <= 11 ) {
-            i++;
-            posicion = fileTmp.indexOf('|||');
-            fileTmp = fileTmp.substring(posicion+3, fileReadedOriginal.length);
-        }
-
-        // Ahora buscamos el final del tramo de texto que necesitamos
-        i = 0;
-        let posTemp = -1;
-        while( i <= 68 ) {
-            i++;
-            posTemp = fileTmp.indexOf('|||', posTemp+1);
-        }
-
-        // Guardamos la posición final hasta el valor que queremos obtener y guardamos la parte
-        // necesaria en una variable para ser procesada luego.
-        const posicionFinal = posTemp;
-        const valoresPrincipalesRenta = fileTmp.substring(0, posicionFinal);
-
-        // Separamos por ||| y creamos un arreglo con los valores
-        let valoresArrRenta = valoresPrincipalesRenta.split('|||');
-
-        // Vamos a crear un objeto cuyos atributos sean los números relacionados a los valores
-        let indiceRentaObj = 33;
-        let valoresRenta = <any>{};
-
-        valoresArrRenta.forEach( valor => {
-            // Guardamos el valor convertido a número en su índice correspondiente
-            valoresRenta[indiceRentaObj] = Number(valor.replace(/,/g, ''));
-            indiceRentaObj++;
-        });
-        
-        let wb = new xl.Workbook();
-
-        const cellStyle = wb.createStyle({
-            'alignment': {
-                'horizontal': ['center'],
-                'vertical': ['center'],
-                'wrapText': true
-            }
-        });
-        
-        // Creamos una hoja en el libro de excel
-        const ws = wb.addWorksheet('Resultados', {
-            'sheetFormat': {
-                'baseColWidth': 20,
-                'defaultColWidth': 20,
-                'defaultRowHeight': 36
-            }
-        });
-
-        const headerStlye = wb.createStyle({
-            'alignment': {
-                'horizontal': ['center'],
-                'vertical': ['center'],
-                'wrapText': true,
-            },
-            'font': {
-                'bold': true,
-                'size': 14
-            }
-        });
-        
-        // Llenamos las celdas
-        ws.cell(1, 1).string('Concepto').style(headerStlye);
-        ws.cell(1, 2).string('Campo').style(headerStlye);
-        ws.cell(1, 3).string('Valor').style(headerStlye);
-        ws.cell(1, 4).string('Año').style(headerStlye);
-        ws.cell(1, 5).string('Razón Social').style(headerStlye);
-
-        // Llenamos manualmente las primeras filas
-        ws.cell(2, 1).string('Total costos y gastos de nómina').style(cellStyle);
-        ws.cell(2, 2).number(Number(30)).style(cellStyle);
-        ws.cell(2, 3).number(Number(arrInitValues[0].replace(/,/g, ''))).style(cellStyle);
-        ws.cell(2, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(2, 5).string(razonSocial).style(cellStyle);
-
-        ws.cell(3, 1).string('Aportes al sistema de seguridad social').style(cellStyle);
-        ws.cell(3, 2).number(Number(31)).style(cellStyle);
-        ws.cell(3, 3).number(Number(arrInitValues[1].replace(/,/g, ''))).style(cellStyle);
-        ws.cell(3, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(3, 5).string(razonSocial).style(cellStyle);
-
-        ws.cell(4, 1).string('Aportes al SENA, ICBF, cajas de compensación').style(cellStyle);
-        ws.cell(4, 2).number(Number(32)).style(cellStyle);
-        ws.cell(4, 3).number(Number(arrInitValues[2].replace(/,/g, ''))).style(cellStyle);
-        ws.cell(4, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(4, 5).string(razonSocial).style(cellStyle);
-        
-        let idx = 5;
-        for ( let concepto in conceptosRentaArr ) {
-            ws.cell(idx, 1).string(conceptosRentaArr[concepto]).style(cellStyle);
-            ws.cell(idx, 5).string(razonSocial).style(cellStyle);
-            ws.cell(idx, 4).number(Number(ano)).style(cellStyle);
-            idx++;
-        }
-        
-        idx = 5;
-        for ( let att in valoresRenta ){
-            ws.cell(idx, 2).number(Number(att)).style(cellStyle);
-            ws.cell(idx, 3).number(valoresRenta[att]).style(cellStyle);
-            idx++;
-        }
-
-        // Creamos el libro de excel
-        ws.column(1).setWidth(70);
-        ws.column(5).setWidth(30);
-        wb.write('./dist/outputs/Renta-Estructurado.xlsx');
-
-        const xlsFile = path.resolve(__dirname, '../outputs/Renta-Estructurado.xlsx');
-
-        // // Configuramos headers
-        var filename = path.basename(xlsFile);
-        var mimetype = mime.lookup(xlsFile);
-
-        return ({
-            filename,
-            mimetype,
-            xlsFile
-        });
-
-    }
-
-    leerIca( data: any ) {
+    leerIca( data: any, anoTitulo: number, fileName: string ) {
 
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
@@ -811,6 +673,41 @@ export default class bitaxpdf {
             posicionFinal = archivo.indexOf('|||', posicionFinal+3);
         }
         return archivo.substring(posicionInicial+3, posicionFinal);
+    }
+
+    private separarPegados( valoresIniciales: string ) {
+        let arrInitValues = [];
+        let posicionFinalNumero = 0;
+        let counter = 0;
+        for (let i = 0; i < valoresIniciales.length; i++) {
+            if ( !isNaN(Number(valoresIniciales[i])) ) {
+                counter ++;
+            } else {
+                counter = 0;
+            }
+            if ( counter >= 4 ) {
+                posicionFinalNumero = i;
+                break;
+            }
+        }
+        arrInitValues.push(valoresIniciales.substring(0, posicionFinalNumero));
+        valoresIniciales = valoresIniciales.substring(posicionFinalNumero, valoresIniciales.length);
+        posicionFinalNumero = 0;
+        counter = 0;
+        for (let i = 0; i < valoresIniciales.length; i++) {
+            if ( !isNaN(Number(valoresIniciales[i])) ) {
+                counter ++;
+            } else {
+                counter = 0;
+            }
+            if ( counter >= 4 ) {
+                posicionFinalNumero = i;
+                break;
+            }
+        }
+        arrInitValues.push(valoresIniciales.substring(0, posicionFinalNumero));
+        arrInitValues.push(valoresIniciales.substring(posicionFinalNumero, valoresIniciales.length));
+        return arrInitValues;
     }
 
     public delay( ms: number ) {
@@ -1117,7 +1014,10 @@ const conceptosIvaArr = [
     'Total anticipos IVA Régimen SIMPLE'
 ];
 
-const conceptosRentaArr = [
+const conceptosRentaArr2018 = [
+    'Total costos y gastos de nómina',
+    'Aportes al sistema de seguridad social',
+    'Aportes al SENA, ICBF, cajas de compensación',
     'Efectivo y equivalentes al efectivo',
     'Inversiones e instrumentos financieros derivados',
     'Cuentas, documentos y arrendamientos financieros por cobrar',
@@ -1183,6 +1083,83 @@ const conceptosRentaArr = [
     'Otras retenciones',
     'Total retenciones año gravable a declarar',
     'Anticipo renta para el año gravable siguiente',
+    'Saldo a pagar por impuesto',
+    'Sanciones',
+    'Total saldo a pagar',
+    'Total saldo a favor'
+];
+
+const conceptosRentaArr2017 = [
+    'Total costos y gastos de nómina',
+    'Aportes al sistema de seguridad social',
+    'Aportes al SENA, ICBF, cajas de compensación',
+    'Efectivo y equivalentes al efectivo',
+    'Inversiones e instrumentos financieros derivados',
+    'Cuentas, documentos y arrendamientos financieros por cobrar',
+    'Inventarios',
+    'Activos intangibles',
+    'Activos biológicos',
+    'Propiedades, planta y equipo, propiedades de inversión y ANCMV',
+    'Otros activos',
+    'Total patrimonio bruto',
+    'Pasivos',
+    'Total patrimonio líquido',
+    'Ingresos brutos de actividades ordinarias',
+    'Ingresos financieros',
+    'Dividendos y/o participaciones recibidos o capitalizados por sociedades extranjeras (año 2016 y anteriores) o nacionales cualquier año',
+    'Dividendos y/o participaciones recibidos por declarantes diferentes a sociedades nacionales, años 2017 y siguientes',
+    'Dividendos y/o participaciones recibidos por personas naturales sin residencias fiscal (año 2016 y anteriores)',
+    'Otros ingresos',
+    'Total ingresos brutos',
+    'Devoluciones, rebajas y descuentos en ventas',
+    'Ingresos no constitutivos de renta ni ganancia ocasional',
+    'Ingresos no constitutivos de dividendos y/o participaciones personas naturales sin residencia fiscal (año 2016 y anteriores)',
+    'Total ingresos netos',
+    'Costos',
+    'Gastos de administración',
+    'Gastos de distribución y ventas',
+    'Gastos financieros',
+    'Otros gastos y deducciones',
+    'Total costos y gastos deducibles',
+    'Inversiones efectuadas en el año',
+    'Inversiones liquidadas de períodos gravables anteriores',
+    'Renta Pasiva - ECE sin residencia fiscal en Colombia',
+    'Renta líquida ordinaria del ejercicio sin casilla 47 y 48',
+    'Pérdida líquida del ejercicio sin casilla 47 y 48',
+    'Compensaciones',
+    'Renta líquida sin casilla 47 y 48',
+    'Renta presuntiva',
+    'Renta exenta',
+    'Rentas gravables',
+    'Distintas a dividendos gravados al 5%, 35% y 33%',
+    'Dividendos gravados a la tarifa del 5%',
+    'Dividendos gravados a la tarifa del 35%',
+    'Dividendos gravados a la tarifa del 33%',
+    'Ingresos por ganancias ocasionales',
+    'Costos por ganancias ocasionales',
+    'Ganancias ocasionales no gravadas y exentas',
+    'Ganancias ocasionales gravables',
+    'Impuesto sobre la renta líquida gravable',
+    'Descuentos tributarios',
+    'Impuesto neto de renta',
+    'Sobretasa',
+    'Impuesto de ganancias ocasionales',
+    'Descuento por impuestos pagados en el exterior por ganancías ocasionales',
+    'Impuesto dividendos gravados a la tarifa del 5%',
+    'Impuesto dividendos gravados a la tarifa del 35%',
+    'Impuesto dividendos gravados a la tarifa del 33%',
+    'Total impuesto a cargo',
+    'Valor inversion obras por impuestos hasta del 50% del valor de la casilla 88 (Modalidad de pago 1)',
+    'Descuento efectivo inversión obras por impuestos (Modalidad de pago 2)',
+    'Anticipo renta liquidado año gravable anterior',
+    'Anticipo sobretasa liquidado año gravable anterior',
+    'Saldo a favor año gravable anterior sin solicitud de devolución y/o compensación',
+    'Saldo a favor renta CREE año gravable anterior sin solicitud de devolución y/o compensación',
+    'Autorretenciones',
+    'Otras retenciones',
+    'Total retenciones año gravable a declarar',
+    'Anticipo renta para el año gravable siguiente',
+    'Anticipo sobretasa para el año gravable siguiente',
     'Saldo a pagar por impuesto',
     'Sanciones',
     'Total saldo a pagar',

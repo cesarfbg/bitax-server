@@ -43,6 +43,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             pdf(dataBuffer).then( async (data: any) => {
                 let ano: any = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if ( Number.isInteger( Number(str) ) ) {
                             ano = Number(str);
@@ -53,7 +54,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 if ( !ano ) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = await bpdf.leerRenta(data, file);
+                const respuesta = await bpdf.leerRenta(data, ano, file.name);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 await bpdf.delay(2000);
@@ -64,6 +65,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             pdf(dataBuffer).then( async (data: any) => {
                 let ano: any = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if ( Number.isInteger( Number(str) ) ) {
                             ano = Number(str);
@@ -74,7 +76,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 if ( !ano ) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = await bpdf.leerIva(data);
+                const respuesta = await bpdf.leerIva(data, ano, file.name);
                 data.
                 res.json({
                     ok: true,
@@ -90,6 +92,7 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             pdf(dataBuffer).then( async (data: any) => {
                 let ano: any = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if ( Number.isInteger( Number(str) ) ) {
                             ano = Number(str);
@@ -100,17 +103,18 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                 if ( !ano ) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = await bpdf.leerIca(data);
+                const respuesta = await bpdf.leerIca(data, ano, file.name);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 await bpdf.delay(2000);
                 const filestream = await fs.createReadStream(respuesta.xlsFile);
                 filestream.pipe(res);
             });
-        } else if ( file.name.toLocaleLowerCase().includes('retenciones') ) { // Verificamos si el archivo es de RETENCIONES
+        } else if ( file.name.toLocaleLowerCase().includes('retencion') ) { // Verificamos si el archivo es de RETENCIONES
             pdf(dataBuffer).then( async (data: any) => {
                 let ano: any = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if ( Number.isInteger( Number(str) ) ) {
                             ano = Number(str);

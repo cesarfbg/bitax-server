@@ -47,6 +47,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
             pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
                 let ano = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if (Number.isInteger(Number(str))) {
                             ano = Number(str);
@@ -57,7 +58,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 if (!ano) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = yield bpdf.leerRenta(data, file);
+                const respuesta = yield bpdf.leerRenta(data, ano, file.name);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 yield bpdf.delay(2000);
@@ -69,6 +70,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
             pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
                 let ano = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if (Number.isInteger(Number(str))) {
                             ano = Number(str);
@@ -79,7 +81,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 if (!ano) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = yield bpdf.leerIva(data);
+                const respuesta = yield bpdf.leerIva(data, ano, file.name);
                 data.
                     res.json({
                     ok: true,
@@ -96,6 +98,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
             pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
                 let ano = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if (Number.isInteger(Number(str))) {
                             ano = Number(str);
@@ -106,7 +109,7 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 if (!ano) {
                     ano = '(No se pudo capturar el año)';
                 }
-                const respuesta = yield bpdf.leerIca(data);
+                const respuesta = yield bpdf.leerIca(data, ano, file.name);
                 res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
                 res.setHeader('Content-type', respuesta.mimetype);
                 yield bpdf.delay(2000);
@@ -114,10 +117,11 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                 filestream.pipe(res);
             }));
         }
-        else if (file.name.toLocaleLowerCase().includes('retenciones')) { // Verificamos si el archivo es de RETENCIONES
+        else if (file.name.toLocaleLowerCase().includes('retencion')) { // Verificamos si el archivo es de RETENCIONES
             pdf(dataBuffer).then((data) => __awaiter(this, void 0, void 0, function* () {
                 let ano = file.name.split(' ');
                 for (let str of ano) {
+                    str = str.replace('.pdf', '');
                     if (str.length === 4) {
                         if (Number.isInteger(Number(str))) {
                             ano = Number(str);
