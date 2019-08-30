@@ -12,7 +12,6 @@ const bpdf = new bitaxpdf();
 const uploadedFilePath = path.resolve( __dirname, '../uploads/files/');
 
 fileRoutes.post('/upload', async ( req: any, res: Response ) => {
-    
     // Validamos si no se ha subido ningún archivo
     if ( !req.files ) {
         return res.status(400).json({
@@ -20,7 +19,6 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             mensaje: 'No se ha subido ningún archivo'
         });
     }
-
     // Si no hay archivos con el BodyKey file enviamos un mensaje
     const file: FileUpload = req.files.file;
     if ( !file ) {
@@ -29,16 +27,12 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             mensaje: 'No se ha subido ningún archivo (BodyKey: file)'
         });
     }
-
     // Verificamos si lo que recibimos es un PDF para ser procesado como tal
     if ( file.mimetype.includes('pdf') ) {
-
         // Guardamos la imagen recibida
         await fileSystem.guardarArchivoTemporal( file );
-
         // Leemos como buffer la imagen guardada
         const dataBuffer = await fs.readFileSync(uploadedFilePath+'/'+file.name);
-
         if ( file.name.toLocaleLowerCase().includes('renta') ) { // Verificamos si el archivo es de RENTA
             pdf(dataBuffer).then( async (data: any) => {
                 let ano: any = file.name.split(' ');
@@ -77,16 +71,11 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
                     ano = '(No se pudo capturar el año)';
                 }
                 const respuesta = await bpdf.leerIva(data, ano, file.name);
-                data.
-                res.json({
-                    ok: true,
-                    respuesta
-                });
-                // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
-                // res.setHeader('Content-type', respuesta.mimetype);
+                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                res.setHeader('Content-type', respuesta.mimetype);
                 await bpdf.delay(2000);
-                // const filestream = await fs.createReadStream(respuesta.xlsFile);
-                // filestream.pipe(res);
+                const filestream = await fs.createReadStream(respuesta.xlsFile);
+                filestream.pipe(res);
             });
         } else if ( file.name.toLocaleLowerCase().includes('ica') ) { // Verificamos si el archivo es de ICA
             pdf(dataBuffer).then( async (data: any) => {
@@ -138,7 +127,6 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             });
         }
     }
-
     // Si lo que recibimos no es ni un PDF ni un EXCEL se envia alerta
     if ( !file.mimetype.includes('pdf')) {
         return res.status(400).json({
@@ -147,7 +135,6 @@ fileRoutes.post('/upload', async ( req: any, res: Response ) => {
             file: file.mimetype
         });
     }
-
 });
 
 export default fileRoutes;

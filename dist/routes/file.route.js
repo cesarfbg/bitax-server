@@ -82,16 +82,11 @@ fileRoutes.post('/upload', (req, res) => __awaiter(this, void 0, void 0, functio
                     ano = '(No se pudo capturar el año)';
                 }
                 const respuesta = yield bpdf.leerIva(data, ano, file.name);
-                data.
-                    res.json({
-                    ok: true,
-                    respuesta
-                });
-                // res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
-                // res.setHeader('Content-type', respuesta.mimetype);
+                res.setHeader('Content-disposition', 'attachment; filename=' + respuesta.filename);
+                res.setHeader('Content-type', respuesta.mimetype);
                 yield bpdf.delay(2000);
-                // const filestream = await fs.createReadStream(respuesta.xlsFile);
-                // filestream.pipe(res);
+                const filestream = yield fs_1.default.createReadStream(respuesta.xlsFile);
+                filestream.pipe(res);
             }));
         }
         else if (file.name.toLocaleLowerCase().includes('ica')) { // Verificamos si el archivo es de ICA

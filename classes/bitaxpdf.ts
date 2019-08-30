@@ -250,64 +250,8 @@ export default class bitaxpdf {
     }
 
     leerIva( data: any, anoTitulo: number, fileName: string ) {
-
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
-        return fileReadedOriginal;
-        
-        // Capturamos el Período
-        let posicionPeriodo = fileReadedOriginal.indexOf('|||25.');
-        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        posicionPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        let posicionFinalPeriodo = fileReadedOriginal.indexOf('|||', posicionPeriodo+3);
-        const periodo = fileReadedOriginal.substring(posicionPeriodo+3, posicionFinalPeriodo).replace(' ', '');
-
-        // Capturamos Periodicidad
-        let posicionPeriodicidad = fileReadedOriginal.indexOf('|||25.');
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        posicionPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        let posicionFinalPeriodicidad = fileReadedOriginal.indexOf('|||', posicionPeriodicidad+3);
-        const periodicidad = fileReadedOriginal.substring(posicionPeriodicidad+3, posicionFinalPeriodicidad).replace(' ', '');
-
-        // Capturamos el Año Gravable
-        let posicionAno = fileReadedOriginal.indexOf('|||Total anticipos IVA');
-        posicionAno = fileReadedOriginal.indexOf('|||', posicionAno+3);
-        let posicionFinalAno = fileReadedOriginal.indexOf('|||', posicionAno+3);
-        const ano = fileReadedOriginal.substring(posicionAno+3, posicionFinalAno);
-
-        // Capturamos la razón social
-        let posicionRS = posicionFinalAno; // Partimos de acá porque estan cerca ambos valores
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        const posicionFinalRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        const razonSocial = fileReadedOriginal.substring(posicionRS+3, posicionFinalRS);
-
-        // Capturamos los valores de las celdas
-        let posicionValores = posicionRS; // Partimos de acá porque estan cerca ambos valores
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-        posicionValores = fileReadedOriginal.indexOf('|||', posicionValores+3);
-
-        // Capturamos la posicion final de los valores
-        let idx = 0;
-        let posicionFinalValores = posicionValores;
-        while ( idx <= 74 ) {
-            posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-            idx++;
-        }
-        let valoresArr: any = fileReadedOriginal.substring(posicionValores+3, posicionFinalValores-4);
-        valoresArr = valoresArr.split('|||');
-
         // Creamos el Libro de Excel
         let wb = new xl.Workbook();
         const cellStyle = wb.createStyle({
@@ -322,7 +266,7 @@ export default class bitaxpdf {
             'sheetFormat': {
                 'baseColWidth': 20,
                 'defaultColWidth': 20,
-                'defaultRowHeight': 36
+                'defaultRowHeight': 50
             }
         });
         const headerStlye = wb.createStyle({
@@ -336,47 +280,93 @@ export default class bitaxpdf {
                 'size': 14
             }
         });
-        
+        ws.column(1).setWidth(70);
+        ws.column(5).setWidth(30);
         // Llenamos las cabeceras
         ws.cell(1, 1).string('Concepto').style(headerStlye);
         ws.cell(1, 2).string('Campo').style(headerStlye);
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
-
-        // Llenamos manualmente las primeras filas
-        ws.cell(2, 1).string('Período').style(cellStyle);
-        ws.cell(2, 2).number(Number(3)).style(cellStyle);
-        ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
-        ws.cell(2, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(2, 5).string(razonSocial).style(cellStyle);
-
-        ws.cell(3, 1).string('Periodicidad de la declaración').style(cellStyle);
-        ws.cell(3, 2).number(Number(24)).style(cellStyle);
-        ws.cell(3, 3).string(periodicidad).style(cellStyle);
-        ws.cell(3, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(3, 5).string(razonSocial).style(cellStyle);
-
-        // Llenamos las celdas con la data
-        for ( let concepto in conceptosIvaArr ) {
-            ws.cell(Number(concepto)+4, 1).string(conceptosIvaArr[concepto]).style(cellStyle);
-            ws.cell(Number(concepto)+4, 2).number(Number(concepto)+27).style(cellStyle);
-            ws.cell(Number(concepto)+4, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-            ws.cell(Number(concepto)+4, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(Number(concepto)+4, 5).string(razonSocial).style(cellStyle);
+        if ( anoTitulo === 2019 ) {
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 209, 1) || anoTitulo;
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 210, 1).replace(' ', '');
+            // Capturamos la Periodicidad
+            const periodicidad = this.obtenerFila(fileReadedOriginal, 216, 1);
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 214, 1);
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 217, 74).split('|||');
+            // Llenamos manualmente el Período
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos manualmente la Periodicidad
+            ws.cell(3, 1).string('Periodicidad de la declaración').style(cellStyle);
+            ws.cell(3, 2).number(Number(24)).style(cellStyle);
+            ws.cell(3, 3).string(periodicidad).style(cellStyle);
+            ws.cell(3, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(3, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosIvaArr2019 ) {
+                ws.cell(Number(concepto)+4, 1).string(conceptosIvaArr2019[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+4, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+4, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+4, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+4, 5).string(razonSocial).style(cellStyle);
+            }
+        } else if ( anoTitulo === 2018 || anoTitulo === 2017 ) {
+            // Capturamos el Año Gravable
+            const ano = this.obtenerFila(fileReadedOriginal, 199, 1) || anoTitulo;
+            // Capturamos el Período
+            const periodo = this.obtenerFila(fileReadedOriginal, 200, 1).replace(' ', '');
+            // Capturamos la Periodicidad
+            let periodicidad = this.obtenerFila(fileReadedOriginal, 206, 1);
+            if ( periodicidad === 'X' ) {
+                periodicidad = 'Cuatrimestral';
+            } else {
+                periodicidad = 'No se pudo capturar, contactar al desarrollador.';
+            }
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 204, 1);
+            // Capturamos los valores
+            const valoresArr = this.obtenerFila(fileReadedOriginal, 208, 65).split('|||');
+            // Llenamos manualmente el Período
+            ws.cell(2, 1).string('Período').style(cellStyle);
+            ws.cell(2, 2).number(Number(3)).style(cellStyle);
+            ws.cell(2, 3).number(Number(periodo)).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos manualmente la Periodicidad
+            ws.cell(3, 1).string('Periodicidad de la declaración').style(cellStyle);
+            ws.cell(3, 2).number(Number(24)).style(cellStyle);
+            ws.cell(3, 3).string(periodicidad).style(cellStyle);
+            ws.cell(3, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(3, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosIvaArr2018y2017 ) {
+                ws.cell(Number(concepto)+4, 1).string(conceptosIvaArr2018y2017[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+4, 2).number(Number(concepto)+27).style(cellStyle);
+                ws.cell(Number(concepto)+4, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+4, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+4, 5).string(razonSocial).style(cellStyle);
+            }
+        } else {
+            ws.cell(2, 1).string('Los archivos del año '+anoTitulo+' no se pueden procesar, contacte al desarrollador').style(headerStlye);
         }
-
         // Creamos el libro de excel
-        ws.column(1).setWidth(70);
-        ws.column(5).setWidth(30);
-        wb.write('./dist/outputs/Iva-Estructurado.xlsx');
-
-        const xlsFile = path.resolve(__dirname, '../outputs/Iva-Estructurado.xlsx');
-
-        // Configuramos headers
-        var filename = path.basename(xlsFile);
-        var mimetype = mime.lookup(xlsFile);
-
+        let name: any = fileName.split('.');
+        name.pop();
+        name = name.join('');
+        const time = new Date().getTime();
+        wb.write(path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx'));
+        const xlsFile = path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx');
+        const filename = path.basename(xlsFile);
+        const mimetype = mime.lookup(xlsFile);
         return ({
             filename,
             mimetype,
@@ -385,212 +375,8 @@ export default class bitaxpdf {
     }
 
     leerIca( data: any, anoTitulo: number, fileName: string ) {
-
         let fileReaded: string = data.text;
         const fileReadedOriginal = fileReaded.replace(/\n/g, '|||');
-
-        // Verificamos si es ANUAL
-        let posicionAnual = 0;
-        let idex = 0;
-        while ( idex <= 94 ) {
-            posicionAnual = fileReadedOriginal.indexOf('|||', posicionAnual+3);
-            idex++;
-        }
-        let posicionFinalAnual = fileReadedOriginal.indexOf('|||', posicionAnual+3);
-        let anualCheck = fileReadedOriginal.substring(posicionAnual+3, posicionFinalAnual);
-        
-        let bimestreOAnual = 'No se pudo capturar el período';
-
-        if (anualCheck == 'X') {
-            bimestreOAnual = 'Anual';
-        }
-
-        // Capturamos el Año Gravable
-        let posicionAno = fileReadedOriginal.indexOf('||MUNICIPIO O DISTRITO:');
-        posicionAno = fileReadedOriginal.indexOf('|||', posicionAno+3);
-        let posicionFinalAno = fileReadedOriginal.indexOf('|||', posicionAno+3);
-        let ano: any = fileReadedOriginal.substring(posicionAno+3, posicionFinalAno);
-        ano = ano.split('/');
-        ano = ano.pop();
-
-        // Capturamos la razón social
-        let posicionRS = fileReadedOriginal.indexOf('|||NOMBRES Y APELLIDOS O RAZÓN SOCIAL:');
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        posicionRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        const posicionFinalRS = fileReadedOriginal.indexOf('|||', posicionRS+3);
-        const razonSocial = fileReadedOriginal.substring(posicionRS+3, posicionFinalRS);
-
-        // Capturamos los valores de las celdas
-        let posicionInicialValores = posicionRS;
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        let posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        let valoresArr = fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||');
-
-        posicionInicialValores = fileReadedOriginal.indexOf('|||40.');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||DEPARTAMENTO', posicionInicialValores);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-        
-        posicionInicialValores = fileReadedOriginal.indexOf('|||MUNICIPIO O DISTRITO DE LA DIRECCIÓN:');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-
-        posicionInicialValores = fileReadedOriginal.indexOf('|||17. TOTAL IMPUESTOS');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-        
-        // Lenamos el campo 18 que viene vacío
-        valoresArr.push('');
-
-        // Seguimos con el campo 19
-        posicionInicialValores = fileReadedOriginal.indexOf('|||40.');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||DEPARTAMENTO', posicionInicialValores);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-        
-        posicionInicialValores = fileReadedOriginal.indexOf('|||MENOS VALOR DE EXENCIÓN O EXONERACIÓN SOBRE EL IMPUESTO Y NO SOBRE LOS INGRESOS');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        let posicion25 = fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores);
-
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        let posicion27 = fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores);
-        
-        posicionInicialValores = fileReadedOriginal.indexOf('|||40.');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||DEPARTAMENTO', posicionInicialValores);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        let arrTmpPosiciones = fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||');
-
-        // Llenamos 23
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 24
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 25
-        valoresArr.push(posicion25);
-
-        // Llenamos 26
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 27
-        valoresArr.push(posicion27);
-
-        // Llenamos 28
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 29
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 30
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 31
-        posicionInicialValores = fileReadedOriginal.indexOf('|||NOMBRES Y APELLIDOS O RAZÓN SOCIAL:');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores));
-
-        // Llenamos 32
-        posicionInicialValores = fileReadedOriginal.indexOf('|||OTRA');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores));
-
-        // Llenamos 33
-        posicionInicialValores = fileReadedOriginal.indexOf('|||MUNICIPIO O DISTRITO DE LA DIRECCIÓN:');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores));
-
-        // Llenamos 34
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 35
-        posicionInicialValores = fileReadedOriginal.indexOf('|||MENOS ANTICIPO LIQUIDADO EN EL AÑO ANTERIOR');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        valoresArr.push(fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores));
-
-        // Llenamos 36
-        valoresArr.push(arrTmpPosiciones.shift()||'');
-
-        // Llenamos 37 y 38
-        posicionInicialValores = fileReadedOriginal.indexOf('|||SANCIONES.');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-        
-        // Llenamos 39 y 40
-        posicionInicialValores = fileReadedOriginal.indexOf('|||MENOS SALDO A FAVOR DEL PERIODO ANTERIOR SIN SOLICITUD DE DEVOLUCIÓN O COMPENSACIÓN');
-        posicionInicialValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionInicialValores+3);
-        posicionFinalValores = fileReadedOriginal.indexOf('|||', posicionFinalValores+3);
-        valoresArr.push(...fileReadedOriginal.substring(posicionInicialValores+3, posicionFinalValores).split('|||'));
-        
         // Creamos el Libro de Excel
         let wb = new xl.Workbook();
         const cellStyle = wb.createStyle({
@@ -605,7 +391,7 @@ export default class bitaxpdf {
             'sheetFormat': {
                 'baseColWidth': 20,
                 'defaultColWidth': 20,
-                'defaultRowHeight': 36
+                'defaultRowHeight': 50
             }
         });
         const headerStlye = wb.createStyle({
@@ -619,47 +405,114 @@ export default class bitaxpdf {
                 'size': 14
             }
         });
-        
+        ws.column(1).setWidth(70);
+        ws.column(5).setWidth(30);
         // Llenamos las cabeceras
         ws.cell(1, 1).string('Concepto').style(headerStlye);
         ws.cell(1, 2).string('Campo').style(headerStlye);
         ws.cell(1, 3).string('Valor').style(headerStlye);
         ws.cell(1, 4).string('Año').style(headerStlye);
         ws.cell(1, 5).string('Razón Social').style(headerStlye);
-
-        // Llenamos manualmente las primeras filas
-        ws.cell(35, 1).string('Bimestre o Período Anual').style(cellStyle);
-        ws.cell(35, 2).string('N/A').style(cellStyle);
-        ws.cell(35, 3).string(bimestreOAnual).style(cellStyle);
-        ws.cell(35, 4).number(Number(ano)).style(cellStyle);
-        ws.cell(35, 5).string(razonSocial).style(cellStyle);
-
-        // Llenamos las celdas con la data
-        for ( let concepto in conceptosIcaArr ) {
-            ws.cell(Number(concepto)+2, 1).string(conceptosIcaArr[concepto]).style(cellStyle);
-            ws.cell(Number(concepto)+2, 2).number(Number(concepto)+8).style(cellStyle);
-            ws.cell(Number(concepto)+2, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
-            ws.cell(Number(concepto)+2, 4).number(Number(ano)).style(cellStyle);
-            ws.cell(Number(concepto)+2, 5).string(razonSocial).style(cellStyle);
+        if ( anoTitulo === 2019 ) {
+            // Capturamos el Año Gravable
+            const ano = anoTitulo;
+            // Capturamos el Período
+            let bimestreOAnual = this.obtenerFila(fileReadedOriginal, 96, 1);
+            if (bimestreOAnual === 'X') {
+                bimestreOAnual = 'Anual';
+            } else {
+                bimestreOAnual = 'Bimestral'
+            }
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 14, 1);
+            // Capturamos los valores
+            let valoresArr = this.obtenerFila(fileReadedOriginal, 16, 4).split('|||');
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 174, 4).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 39, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 30, 1).split('|||'));
+            valoresArr.push(''); // kW Campo 18 sin capturar
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 178, 1).split('|||')); // IMPUESTO LEY
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 30, 3).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 179, 2).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 33, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 180, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 34, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 181, 3).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 20, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 208, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 38, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 184, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 67, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 185, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 70, 2).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 73, 2).split('|||'));
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Bimestre o Período Anual').style(cellStyle);
+            ws.cell(2, 2).string('N/A').style(cellStyle);
+            ws.cell(2, 3).string(bimestreOAnual).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosIcaArr2019 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosIcaArr2019[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+8).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+        } else if ( anoTitulo === 2018 ) {
+            // Capturamos el Año Gravable
+            const ano = anoTitulo;
+            // Capturamos el Período
+            let bimestreOAnual = this.obtenerFila(fileReadedOriginal, 129, 1);
+            if (bimestreOAnual === 'X') {
+                bimestreOAnual = 'Anual';
+            } else {
+                bimestreOAnual = 'Bimestral'
+            }
+            // Capturamos la razón social
+            const razonSocial = this.obtenerFila(fileReadedOriginal, 35, 1);
+            // Capturamos los valores
+            let valoresArr = this.obtenerFila(fileReadedOriginal, 38, 4).split('|||');
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 47, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 71, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 58, 5).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 41, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 70, 1).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 99, 1).replace('22.VALOR A PAGARVP','').split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 104, 2).split('|||'));
+            valoresArr.push(...this.obtenerFila(fileReadedOriginal, 112, 2).split('|||'));
+            // Llenamos manualmente las primeras filas
+            ws.cell(2, 1).string('Bimestre o Período Anual').style(cellStyle);
+            ws.cell(2, 2).string('N/A').style(cellStyle);
+            ws.cell(2, 3).string(bimestreOAnual).style(cellStyle);
+            ws.cell(2, 4).number(Number(ano)).style(cellStyle);
+            ws.cell(2, 5).string(razonSocial).style(cellStyle);
+            // Llenamos las celdas con la data
+            for ( let concepto in conceptosIcaArr2018 ) {
+                ws.cell(Number(concepto)+3, 1).string(conceptosIcaArr2018[concepto]).style(cellStyle);
+                ws.cell(Number(concepto)+3, 2).number(Number(concepto)+9).style(cellStyle);
+                ws.cell(Number(concepto)+3, 3).number(Number(valoresArr[concepto].replace(/,/g, ''))).style(cellStyle);
+                ws.cell(Number(concepto)+3, 4).number(Number(ano)).style(cellStyle);
+                ws.cell(Number(concepto)+3, 5).string(razonSocial).style(cellStyle);
+            }
+        } else {
+            ws.cell(2, 1).string('Los archivos del año '+anoTitulo+' no se pueden procesar, contacte al desarrollador').style(headerStlye);
         }
-
         // Creamos el libro de excel
-        ws.column(1).setWidth(70);
-        ws.column(5).setWidth(30);
-        wb.write('./dist/outputs/Ica-Estructurado.xlsx');
-
-        const xlsFile = path.resolve(__dirname, '../outputs/Ica-Estructurado.xlsx');
-
-        // Configuramos headers
-        var filename = path.basename(xlsFile);
-        var mimetype = mime.lookup(xlsFile);
-
+        let name: any = fileName.split('.');
+        name.pop();
+        name = name.join('');
+        const time = new Date().getTime();
+        wb.write(path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx'));
+        const xlsFile = path.resolve(__dirname, '../../dist/outputs/'+name+'-'+time+'.xlsx');
+        const filename = path.basename(xlsFile);
+        const mimetype = mime.lookup(xlsFile);
         return ({
             filename,
             mimetype,
             xlsFile
         });
-
     }
 
     private obtenerFila( archivo: string,  fila: number, cantidadDeLineas: number ) {
@@ -900,7 +753,28 @@ const conceptosRetencionesArr2017 = [
     'Total retenciones más sanciones'
 ];
 
-const conceptosIcaArr = [
+const conceptosIcaArr2018 = [
+    'TOTAL INGRESOS ORDINARIOS Y EXTRAORDINARIOS DEL PERIODO',
+    'TOTAL INGRESOS OBTENIDOS FUERA DEL DISTRITO CAPITAL',
+    'TOTAL INGRESOS BRUTOS OBTENIDOS EN EL DISTRITO CAPITAL (renglón 9 - 10)',
+    'DEVOLUCIONES, REBAJAS Y DESCUENTOS',
+    'DEDUCCIONES, EXENCIONES Y ACTIVIDADES NO SUJETAS',
+    'TOTAL INGRESOS NETOS GRAVABLES (renglón 11 - 12 - 13) BE',
+    'IMPUESTO DE INDUSTRIA Y COMERCIO',
+    'IMPUESTO DE AVISOS Y TABLEROS (15% de Renglón 15)',
+    'VALOR TOTAL DE UNIDADES COMERCIALES ADICIONALES',
+    'TOTAL IMPUESTO A CARGO (renglón 15 + renglón 16 + renglón 17)',
+    'VALOR RETENIDO A TITULO DE IMPUESTO DE INDUSTRIA Y COMERCIO',
+    'SANCIONES',
+    'TOTAL SALDO A CARGO (renglón 18 - renglón 19 + renglón 20)',
+    'VALOR A PAGAR',
+    'INTERESES DE MORA',
+    'TOTAL A PAGAR (renglón 22 + renglón 23)',
+    'PAGO VOLUNTARIO (10% del renglón 18)',
+    'TOTAL A PAGAR CON PAGO VOLUNTARIO (renglón 24 + renglón 25)'
+];
+
+const conceptosIcaArr2019 = [
     'TOTAL INGRESOS ORDINARIOS Y EXTRAORDINARIOS DEL PERIODO EN TODO EL PAIS',
     'MENOS INGRESOS FUERA DE ESTE MUNICIPIO O DISTRITO',
     'TOTAL INGRESOS ORDINARIOS Y EXTRAORDINARIOS EN ESTE MUNICIPIO (RENGLÓN 8 MENOS 9)',
@@ -936,7 +810,7 @@ const conceptosIcaArr = [
     'TOTAL A PAGAR CON PAGO VOLUNTARIO (Reglón 38 + 39)'
 ];
 
-const conceptosIvaArr = [
+const conceptosIvaArr2019 = [
     'Ingresos por operaciones gravadas al 5%',
     'Ingresos por operaciones gravadas a la tarifa general',
     'Ingresos A.I.U por operaciones gravadas (base gravable especial)',
@@ -1011,6 +885,74 @@ const conceptosIvaArr = [
     'Bimestre 5',
     'Bimestre 6',
     'Total anticipos IVA Régimen SIMPLE'
+];
+
+const conceptosIvaArr2018y2017 = [
+    'Ingresos por operaciones gravadas al 5%',
+    'Ingresos por operaciones gravadas a la tarifa general',
+    'Ingresos A.I.U por operaciones gravadas (base gravable especial)',
+    'Ingresos por exportación de bienes',
+    'Ingresos por exportación de servicios',
+    'Ingresos por ventas a sociedades de comercialización internacional',
+    'Ingresos por ventas a zonas francas',
+    'Ingresos por juegos de suerte y azar',
+    'Ingresos por operaciones exentas (Arts. 477, 478 y 481 del ET)',
+    'Ingresos por venta de cerveza de producción nacional o importada',
+    'Ingresos por venta de licores, aperitivos, vinos y similares',
+    'Ingresos por operaciones excluidas',
+    'Ingresos por operaciones no gravadas',
+    'Total ingresos brutos',
+    'Devoluciones en ventas anuladas, rescindidas o resueltas',
+    'Total ingresos netos recibidos durante el período',
+    'Compras importación de bienes gravados a la tarifa del 5%',
+    'Compras importación de bienes gravados a la tarifa general',
+    'Compras importación de bienes y servicios gravados provenientes de Zonas Francas',
+    'Compras importación de bienes no gravados',
+    'Compras importación de bienes excluidos, exentos y no gravados provenientes de Zonas Francas',
+    'Compras importación de servicios',
+    'Compras nacionales de bienes gravados a la tarifa del 5%',
+    'Compras nacionales de bienes gravados a la tarifa general',
+    'Compras nacionales de servicios gravados a la tarifa del 5%',
+    'Compras nacionales de servicios gravados a la tarifa general',
+    'Compras nacionales de bienes y servicios excluidos, exentos y no gravados',
+    'Total compras e importaciones brutas',
+    'Devoluciones en compras anuladas, rescindidas o resueltas en este período',
+    'Total compras netas realizadas durante el período',
+    'A la tarifa del 5%',
+    'A la tarifa general',
+    'Sobre A.I.U en operaciones gravadas (base gravable especial)',
+    'En juegos de suerte y azar',
+    'En venta cerveza de producción nacional o importada',
+    'En venta de licores, aperitivos, vinos y similares 5%',
+    'En retiro de inventario para activos fijos, consumo, muestras gratis o donaciones',
+    'IVA recuperado en devoluciones en compras anuladas, rescindidas o resueltas',
+    'Total impuesto generado por operaciones gravadas',
+    'Por importaciones gravadas a tarifa del 5%',
+    'Por importaciones gravadas la tarifa general',
+    'De bienes y servicios gravados provenientes de Zonas Francas',
+    'Por compras de bienes gravados a la tarifa 5%',
+    'Por compras de bienes gravados a tarifa general',
+    'Por licores, aperitivos, vinos y similares',
+    'Por servicios gravados a la tarifa del 5%',
+    'Por servicios gravados a la tarifa general',
+    'Descuento IVA exploración hidrocarburos Art. 485-2 ET',
+    'Total Impuesto pagado o facturado',
+    'IVA retenido por servicios prestados en Colombia por no domiciliados o no residentes',
+    'IVA resultante por devoluciones en ventas anuladas, rescindidas o resueltas',
+    'Ajuste impuestos descontables (perdidas, hurto o castigo de inventarios)',
+    'Total impuestos descontables',
+    'Saldo a pagar por el período fiscal',
+    'Saldo a favor del período fiscal',
+    'Saldo a favor del período fiscal anterior',
+    'Retenciones por IVA que le practicaron',
+    'Saldo a pagar por impuesto',
+    'Sanciones',
+    'Total saldo a pagar por este período',
+    'o Total saldo a favor por este período',
+    'Saldo a favor susceptible de devolución y/o compensación por el presente período',
+    'Saldo a favor susceptible de ser devuelto y/o compensado a imputar en el período siguiente',
+    'Saldo a favor sin derecho a dev. y/o compensación susceptible de ser imputado en el período siguiente',
+    'Total saldo a favor a imputar al periodo siguiente',
 ];
 
 const conceptosRentaArr2018 = [
